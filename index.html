@@ -635,6 +635,8 @@ body {
   height: 6px; border-radius: 3px;
   background: var(--inp-bg); border: 1px solid var(--inp-bdr);
   outline: none; cursor: pointer;
+  /* footer全体はtouch-action:noneだがスライダーは横操作を許可 */
+  touch-action: pan-x;
 }
 .hp-pct-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
