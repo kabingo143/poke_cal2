@@ -2795,6 +2795,9 @@ document.addEventListener('DOMContentLoaded', () => {
   // ハンドルバータップでトグル
   handle.addEventListener('click', toggleSheet);
 
+  // フッター全体でtouchmoveをブロック → 背後のページが一切スクロールされない
+  footer.addEventListener('touchmove', e => { e.preventDefault(); }, { passive: false });
+
   // フッター上スワイプで開く・下スワイプで閉じる
   footer.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
   footer.addEventListener('touchend', e => {
