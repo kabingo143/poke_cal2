@@ -538,8 +538,12 @@ body {
   transition: width .3s; border-radius: 3px 0 0 3px;
 }
 .hp-bar-labels {
-  display: flex; justify-content: space-between;
+  display: flex; justify-content: space-between; align-items: center;
   font-size: 9px; color: var(--text3); padding: 0 2px; margin-bottom: 4px;
+}
+/* 中央の残りHPは flex で中央寄せ */
+.hp-bar-labels .hp-lbl-center {
+  flex: 1; text-align: center;
 }
 
 /* 乱数表 */
@@ -548,6 +552,137 @@ body {
 .rand-table td { padding: 2px 1px; border: 1px solid #1e2d40; min-width: 22px; }
 .rand-pct { color: var(--text3); }
 .rand-val  { font-weight: 700; }
+
+/* ===== 詳細設定ドロワー ===== */
+/* オーバーレイ（背景暗幕） */
+.drawer-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 150;
+  opacity: 0; pointer-events: none;
+  transition: opacity .25s;
+}
+.drawer-overlay.show { opacity: 1; pointer-events: auto; }
+
+/* ドロワー本体 */
+.detail-drawer {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 160;
+  background: #0d1a2a;
+  border-top: 2px solid var(--accent);
+  border-radius: 16px 16px 0 0;
+  padding: 0 14px 12px;
+  padding-bottom: calc(12px + env(safe-area-inset-bottom));
+  /* 閉じた状態は画面外に隠す */
+  transform: translateY(100%);
+  transition: transform .28s cubic-bezier(.32,1,.48,1);
+  max-height: 60vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.detail-drawer.open { transform: translateY(0); }
+
+/* ドロワーハンドル（タップ帯） */
+.drawer-handle {
+  display: flex; justify-content: center; align-items: center;
+  padding: 10px 0 6px;
+  cursor: pointer;
+  /* タッチ領域を広げる */
+  margin: 0 -14px; padding-left: 14px; padding-right: 14px;
+}
+.drawer-handle-bar {
+  width: 36px; height: 4px;
+  background: var(--border2);
+  border-radius: 2px;
+}
+
+/* ドロワーヘッダー */
+.drawer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 14px;
+}
+.drawer-title {
+  font-size: 12px; font-weight: 700;
+  color: var(--accent); letter-spacing: .06em;
+}
+.drawer-close {
+  background: none; border: none;
+  color: var(--text3); font-size: 18px;
+  cursor: pointer; padding: 2px 6px; line-height: 1;
+}
+
+/* ===== HP割合スライダーセクション ===== */
+.detail-section {
+  background: rgba(0,0,0,.25);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  margin-bottom: 10px;
+}
+.detail-section-title {
+  font-size: 10px; font-weight: 700;
+  color: var(--text3); letter-spacing: .08em;
+  margin-bottom: 8px;
+}
+
+/* HP割合スライダー行 */
+.hp-pct-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.hp-pct-label {
+  font-size: 11px; color: var(--text2); white-space: nowrap; min-width: 28px;
+}
+/* スライダー本体 */
+.hp-pct-slider {
+  flex: 1;
+  -webkit-appearance: none; appearance: none;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--inp-bg);
+  border: 1px solid var(--inp-bdr);
+  outline: none;
+  cursor: pointer;
+}
+.hp-pct-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #0d1a2a;
+  cursor: pointer;
+  box-shadow: 0 0 6px rgba(90,158,255,.5);
+}
+.hp-pct-slider::-moz-range-thumb {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid #0d1a2a;
+  cursor: pointer;
+}
+/* HP割合数値表示 */
+.hp-pct-val {
+  font-size: 15px; font-weight: 800;
+  color: var(--text); min-width: 42px; text-align: right;
+}
+/* HP実数値表示 */
+.hp-pct-real {
+  font-size: 11px; color: var(--text2);
+  text-align: center; margin-bottom: 4px;
+}
+
+/* フッタータップ用のヒントバー（結果フッター上端） */
+.footer-tap-hint {
+  display: flex; justify-content: center; align-items: center;
+  gap: 4px; padding: 3px 0 0;
+  cursor: pointer;
+  color: var(--text3); font-size: 9px; letter-spacing: .04em;
+  user-select: none; -webkit-user-select: none;
+}
+.footer-tap-hint-bar {
+  width: 28px; height: 3px;
+  background: var(--border2); border-radius: 2px;
+}
 </style>
 </head>
 <body>
@@ -900,7 +1035,13 @@ body {
 </div><!-- /.app -->
 
 <!-- ===== 固定フッター（計算結果） ===== -->
-<div class="result-footer">
+<div class="result-footer" id="result-footer">
+  <!-- タップ/スワイプで詳細設定を開くヒントバー -->
+  <div class="footer-tap-hint" id="footer-tap-hint" onclick="openDrawer()">
+    <div class="footer-tap-hint-bar"></div>
+    <span>詳細設定</span>
+    <div class="footer-tap-hint-bar"></div>
+  </div>
   <div class="result-inner" style="position:relative;">
     <!-- 急所ボタン（右上固定） -->
     <button id="crit-btn" onclick="toggleCrit()" style="
@@ -937,7 +1078,10 @@ body {
     </div>
     <div class="hp-bar-labels">
       <span>0</span>
-      <span id="hp-bar-remain"></span>
+      <!-- 中央：残りHP範囲 -->
+      <span class="hp-lbl-center" id="hp-bar-remain"></span>
+      <!-- 右端：HP実数値 -->
+      <span id="hp-bar-max"></span>
     </div>
     <!-- 乱数16通り -->
     <div class="rand-section">
@@ -949,7 +1093,39 @@ body {
   </div>
 </div>
 
-<!-- ===== JavaScript ===== -->
+<!-- ===== 詳細設定ドロワー ===== -->
+<!-- 背景暗幕（タップで閉じる） -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<div class="detail-drawer" id="detail-drawer">
+  <!-- ハンドル（引っ張りバー） -->
+  <div class="drawer-handle" onclick="closeDrawer()">
+    <div class="drawer-handle-bar"></div>
+  </div>
+
+  <!-- ヘッダー -->
+  <div class="drawer-header">
+    <span class="drawer-title">⚙ 詳細設定</span>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+
+  <!-- HP割合設定セクション -->
+  <div class="detail-section">
+    <div class="detail-section-title">HP 割合設定</div>
+    <!-- スライダー行 -->
+    <div class="hp-pct-row">
+      <span class="hp-pct-label">HP%</span>
+      <input class="hp-pct-slider" type="range" id="hp-pct-slider"
+        min="0" max="100" value="100"
+        oninput="onHpPctSlider(this.value)">
+      <span class="hp-pct-val" id="hp-pct-val-disp">100%</span>
+    </div>
+    <!-- HP実数値プレビュー -->
+    <div class="hp-pct-real" id="hp-pct-real-disp">—</div>
+  </div>
+
+  <!-- 今後の詳細設定をここに追加 -->
+</div>
 <script src="pokemon.js"></script>
 <script src="waza.js"></script>
 <script>
@@ -967,6 +1143,11 @@ let stabVal = 1.5, typeEff = 1.0;
 let weather = 'none'; // 'none' | 'sunny' | 'rain' | 'sand' | 'snow'
 let acIdx = { atk: -1, def: -1 };
 let wazaAcIdx = -1;
+
+// 詳細設定ドロワーの状態
+let hpPctOverride = 100;       // HP割合（0〜100）、100=フルHP
+let drawerOpen    = false;      // ドロワー開閉状態
+let swipeStartY   = 0;          // スワイプ開始Y座標
 
 // ============================================================
 // ユーティリティ
@@ -1992,7 +2173,9 @@ function getWeatherStom(moveType){
 // ============================================================
 function calcDmg(){
   const power=parseInt(document.getElementById('move-power').value)||0;
-  const hp   =parseInt(document.getElementById('def-hp').value)||0;
+  // HP実数値にHP割合を掛けて実効HP（割合設定が100以外なら補正）
+  const hpFull = parseInt(document.getElementById('def-hp').value)||0;
+  const hp     = hpPctOverride >= 100 ? hpFull : Math.max(1, Math.floor(hpFull * hpPctOverride / 100));
 
   // 技タイプを先に取得（フィールド・天気・砂嵐/雪補正の判定に使用）
   const currentWaza = (typeof WD !== 'undefined')
@@ -2195,14 +2378,35 @@ function updateHpBar(minDmg, maxDmg, hp){
   const barMin   =document.getElementById('hp-bar-min');
   const barRange =document.getElementById('hp-bar-range');
   const barLabel =document.getElementById('hp-bar-remain');
-  if(!hp){ barMin.style.width='0%'; barRange.style.width='0%'; if(barLabel)barLabel.textContent=''; return; }
-  const minRemain=Math.max(0,(hp-maxDmg)/hp*100);
-  const maxRemain=Math.max(0,(hp-minDmg)/hp*100);
+  const barMax   =document.getElementById('hp-bar-max'); // 右端：HP実数値
+
+  if(!hp){ barMin.style.width='0%'; barRange.style.width='0%'; if(barLabel)barLabel.textContent=''; if(barMax)barMax.textContent=''; return; }
+
+  // HP割合によるオフセット（現在HPの開始位置をバー上で表現）
+  // hpPctOverride=100のときは通常通り左端から、それ以外は割合分だけ右にずれた位置から描画
+  const hpFull   = parseInt(document.getElementById('def-hp').value)||hp;
+  const pctStart = hpPctOverride >= 100 ? 0 : (hpFull - hp) / hpFull * 100; // 消費済みHP分
+
+  // 残りHPの割合（フルHP基準）
+  const minRemain = Math.max(0, (hp - maxDmg) / hpFull * 100);
+  const maxRemain = Math.max(0, (hp - minDmg) / hpFull * 100);
+
   function barColor(p){ if(p<=0)return'transparent'; if(p<=20)return'var(--red)'; if(p<=50)return'var(--yellow)'; return'var(--green)'; }
-  barMin.style.width=minRemain.toFixed(1)+'%'; barMin.style.background=barColor(minRemain);
-  barRange.style.width=maxRemain.toFixed(1)+'%'; barRange.style.background=barColor(maxRemain);
+
+  // min側バー：左端から「消費済み＋ダメ後残り」の幅
+  barMin.style.width   = (pctStart + minRemain).toFixed(1) + '%';
+  barMin.style.background = barColor(minRemain);
+
+  // range側バー（薄い帯）：左端から「消費済み＋最大ダメ後残り」の幅
+  barRange.style.width    = (pctStart + maxRemain).toFixed(1) + '%';
+  barRange.style.background = barColor(maxRemain);
+
+  // 右端にHP実数値（フルHP）を表示
+  if(barMax) barMax.textContent = hpFull;
+
   if(barLabel){
-    if(minRemain<=0){ barLabel.textContent='確定倒せる'; barLabel.style.color='var(--red)'; }
+    if(minRemain <= 0){ barLabel.textContent='確定倒せる'; barLabel.style.color='var(--red)'; }
+    // 中央に残りHP範囲（最小〜最大）を表示
     else { barLabel.textContent=`残HP ${Math.round(hp-maxDmg)}〜${Math.round(hp-minDmg)}`; barLabel.style.color='var(--text3)'; }
   }
 }
@@ -2259,6 +2463,7 @@ function clearResult(){
   document.getElementById('hp-bar-min').style.width='0%';
   document.getElementById('hp-bar-range').style.width='0%';
   document.getElementById('hp-bar-remain').textContent='';
+  document.getElementById('hp-bar-max').textContent=''; // 右端HP実数値もリセット
   document.getElementById('rand-row-pct').innerHTML='';
   document.getElementById('rand-row-val').innerHTML='';
 }
@@ -2497,7 +2702,94 @@ function resetAll(){
     if(desc) desc.textContent = '';
   });
   clearResult();
+  // HP割合をリセット
+  hpPctOverride = 100;
+  const slider = document.getElementById('hp-pct-slider');
+  if(slider) slider.value = 100;
+  syncHpPctUI();
 }
+
+// ============================================================
+// 詳細設定ドロワー
+// ============================================================
+
+/** ドロワーを開く */
+function openDrawer(){
+  drawerOpen = true;
+  document.getElementById('detail-drawer').classList.add('open');
+  document.getElementById('drawer-overlay').classList.add('show');
+  // 開いたときスライダーとプレビューを最新状態に同期
+  syncHpPctUI();
+}
+
+/** ドロワーを閉じる */
+function closeDrawer(){
+  drawerOpen = false;
+  document.getElementById('detail-drawer').classList.remove('open');
+  document.getElementById('drawer-overlay').classList.remove('show');
+}
+
+/** HP割合スライダーが動いたとき */
+function onHpPctSlider(val){
+  hpPctOverride = parseInt(val);
+  syncHpPctUI();  // 表示を更新
+  calcDmg();      // ダメージ再計算（HPバーにも反映される）
+}
+
+/** スライダー表示とHP実数値プレビューを同期 */
+function syncHpPctUI(){
+  const slider  = document.getElementById('hp-pct-slider');
+  const valDisp = document.getElementById('hp-pct-val-disp');
+  const realDisp= document.getElementById('hp-pct-real-disp');
+  if(!slider) return;
+
+  // スライダーの値を状態に合わせる（外部からhpPctOverrideが変わった場合も対応）
+  slider.value = hpPctOverride;
+
+  // パーセント表示（色を割合に応じて変化）
+  const pct = hpPctOverride;
+  valDisp.textContent = pct + '%';
+  valDisp.style.color = pct <= 25 ? 'var(--red)' : pct <= 50 ? 'var(--yellow)' : 'var(--green)';
+
+  // HP実数値プレビュー（フルHPから割合計算）
+  const hpFull = parseInt(document.getElementById('def-hp').value) || 0;
+  if(hpFull){
+    const hpNow = pct >= 100 ? hpFull : Math.max(1, Math.floor(hpFull * pct / 100));
+    realDisp.textContent = `現在HP: ${hpNow} / ${hpFull}`;
+    realDisp.style.color = 'var(--text2)';
+  } else {
+    realDisp.textContent = '防御側のHPを入力してください';
+    realDisp.style.color = 'var(--text3)';
+  }
+
+  // スライダーの背景グラデーションを割合に合わせて更新
+  const color = pct <= 25 ? '#ff6b6b' : pct <= 50 ? '#ffd93d' : '#6ee88a';
+  slider.style.background =
+    `linear-gradient(to right, ${color} 0%, ${color} ${pct}%, var(--inp-bg) ${pct}%, var(--inp-bg) 100%)`;
+}
+
+// フッターをタップで開く（ヒントバー以外の領域も対応）
+document.addEventListener('DOMContentLoaded', () => {
+  const footer  = document.getElementById('result-footer');
+  const drawer  = document.getElementById('detail-drawer');
+
+  // フッター上スワイプでドロワーを開く
+  footer.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+  footer.addEventListener('touchend', e => {
+    const dy = swipeStartY - e.changedTouches[0].clientY;
+    if(dy > 30 && !drawerOpen) openDrawer(); // 30px以上上スワイプで開く
+  }, { passive: true });
+
+  // ドロワー自体を下スワイプで閉じる
+  drawer.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+  drawer.addEventListener('touchend', e => {
+    const dy = e.changedTouches[0].clientY - swipeStartY;
+    if(dy > 40 && drawerOpen) closeDrawer(); // 40px以上下スワイプで閉じる
+  }, { passive: true });
+
+  // 初期スライダー状態を同期
+  syncHpPctUI();
+});
 
 // PWAサービスワーカー登録
 if('serviceWorker' in navigator){
