@@ -46,6 +46,8 @@ body {
   min-height: 100%;
   /* 固定フッター分の余白 + セーフエリア */
   padding-bottom: calc(var(--footer-h) + env(safe-area-inset-bottom));
+  /* フッター上のスワイプが body スクロールに漏れるのを防ぐ */
+  overscroll-behavior: none;
 }
 
 /* ===== スクロール領域 ===== */
@@ -508,6 +510,8 @@ body {
   /* 高さをJSで --sheet-collapsed にセット、開くときアニメーション */
   transition: height .28s cubic-bezier(.32,1,.48,1);
   overflow: hidden;
+  /* フッター上のタッチをブラウザのスクロール処理に渡さない */
+  touch-action: none;
 }
 .result-inner {
   max-width: 480px;
@@ -570,6 +574,8 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   max-height: 60vh;
+  /* フッター全体はtouch-action:noneだが、ここだけ縦スクロールを許可 */
+  touch-action: pan-y;
 }
 
 /* ハンドルバー（シート上端・タップ/スワイプ帯） */
