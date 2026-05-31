@@ -2795,12 +2795,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // ハンドルバータップでトグル
   handle.addEventListener('click', toggleSheet);
 
-  // フッター上スワイプで開く
+  // フッター上スワイプで開く・下スワイプで閉じる
   footer.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
   footer.addEventListener('touchend', e => {
     const dy = swipeStartY - e.changedTouches[0].clientY;
-    if(dy > 30 && !drawerOpen) expandSheet();  // 上スワイプ30px以上で開く
+    if(dy > 30 && !drawerOpen) expandSheet();   // 上スワイプ30px以上で開く
     if(dy < -40 && drawerOpen) collapseSheet(); // 下スワイプ40px以上で閉じる
+  }, { passive: true });
+
+  // シート内のtouchイベントを背後に伝播させない（後ろのUIが誤操作されるのを防止）
+  scroll.addEventListener('touchstart', e => { e.stopPropagation(); }, { passive: true });
+  scroll.addEventListener('touchmove',  e => { e.stopPropagation(); }, { passive: false });
+  scroll.addEventListener('touchend',   e => { e.stopPropagation(); }, { passive: true });
+
+  // シート外タップで閉じる
+  document.addEventListener('touchend', e => {
+    if(drawerOpen && !footer.contains(e.target)){
+      collapseSheet();
+    }
   }, { passive: true });
 
   // 画面リサイズ時にシート高さを再計算
