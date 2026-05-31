@@ -2801,38 +2801,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // ハンドルバータップでトグル
   handle.addEventListener('click', toggleSheet);
 
-  // フッター全体でtouchmoveをブロック → 背後のページが一切スクロールされない
+  // フッター全体のtouchmoveで背後のページスクロールを完全ブロック
   footer.addEventListener('touchmove', e => { e.preventDefault(); }, { passive: false });
 
-  // フッター上スワイプで開く・下スワイプで閉じる
+  // フッター全体でスワイプ判定（result-inner・乱数表含む全エリア）
   footer.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
   footer.addEventListener('touchend', e => {
     const dy = swipeStartY - e.changedTouches[0].clientY;
     if(dy > 30 && !drawerOpen) expandSheet();   // 上スワイプ30px以上で開く
     if(dy < -40 && drawerOpen) collapseSheet(); // 下スワイプ40px以上で閉じる
   }, { passive: true });
-
-  // シート内のtouchイベントを背後に伝播させない（後ろのUIが誤操作されるのを防止）
-  scroll.addEventListener('touchstart', e => {
-    e.stopPropagation();
-    // スクロール開始位置を記録（シート内スクロール判定用）
-    scroll._touchStartY = e.touches[0].clientY;
-  }, { passive: true });
-
-  // touchmoveはpreventDefault必須（passive:falseにしないと呼べない）
-  scroll.addEventListener('touchmove', e => {
-    e.stopPropagation();
-    const dy = e.touches[0].clientY - (scroll._touchStartY || 0);
-    const atTop    = scroll.scrollTop === 0;
-    const atBottom = scroll.scrollTop + scroll.clientHeight >= scroll.scrollHeight - 1;
-    // シート内がスクロール範囲内なら背後をブロックしつつ自身のスクロールは通す
-    // 端まで来たとき（または上下端でのオーバースクロール）だけpreventDefault
-    if((atTop && dy > 0) || (atBottom && dy < 0)){
-      e.preventDefault(); // 端でのオーバースクロールを防止
-    }
-  }, { passive: false });
-
-  scroll.addEventListener('touchend', e => { e.stopPropagation(); }, { passive: true });
 
   // シート外タップで閉じる
   document.addEventListener('touchend', e => {
