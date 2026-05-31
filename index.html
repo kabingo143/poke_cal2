@@ -507,11 +507,8 @@ body {
   border-top: 2px solid #2a4060;
   border-radius: 14px 14px 0 0;
   box-shadow: 0 -4px 24px rgba(0,0,0,.7);
-  /* 高さをJSで --sheet-collapsed にセット、開くときアニメーション */
   transition: height .28s cubic-bezier(.32,1,.48,1);
   overflow: hidden;
-  /* フッター上のタッチをブラウザのスクロール処理に渡さない */
-  touch-action: none;
 }
 .result-inner {
   max-width: 480px;
@@ -574,8 +571,6 @@ body {
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   max-height: 60vh;
-  /* フッター全体はtouch-action:noneだが、ここだけ縦スクロールを許可 */
-  touch-action: pan-y;
 }
 
 /* ハンドルバー（シート上端・タップ/スワイプ帯） */
@@ -635,8 +630,8 @@ body {
   height: 6px; border-radius: 3px;
   background: var(--inp-bg); border: 1px solid var(--inp-bdr);
   outline: none; cursor: pointer;
-  /* footer全体はtouch-action:noneだがスライダーは横操作を許可 */
-  touch-action: pan-x;
+  /* 親のtouch-action:noneを上書きしてスライダー操作を有効化 */
+  touch-action: auto;
 }
 .hp-pct-slider::-webkit-slider-thumb {
   -webkit-appearance: none;
@@ -2804,7 +2799,11 @@ document.addEventListener('DOMContentLoaded', () => {
   handle.addEventListener('click', toggleSheet);
 
   // フッター全体のtouchmoveで背後のページスクロールを完全ブロック
-  footer.addEventListener('touchmove', e => { e.preventDefault(); }, { passive: false });
+  // ただしスライダー上のタッチはブラウザに処理させる
+  footer.addEventListener('touchmove', e => {
+    if(e.target.closest('.hp-pct-slider')) return; // スライダーは通す
+    e.preventDefault();
+  }, { passive: false });
 
   // フッター全体でスワイプ判定（result-inner・乱数表含む全エリア）
   footer.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
