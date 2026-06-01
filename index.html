@@ -19,11 +19,11 @@
   --text2:    #7a9abf;
   --text3:    #3a5070;
   --atk:      #ff7a7a;
-  --atk-bg:   #1e1420;
-  --atk-bdr:  #5a2a3a;
+  --atk-bg:   #2a1520;
+  --atk-bdr:  #8a3a50;
   --def:      #7ab8ff;
-  --def-bg:   #141a28;
-  --def-bdr:  #2a4a6a;
+  --def-bg:   #112035;
+  --def-bdr:  #2a5a8a;
   --accent:   #5a9eff;
   --green:    #6ee88a;
   --yellow:   #ffd93d;
@@ -483,7 +483,7 @@ body {
 
 /* ===== 技カード ===== */
 .move-card {
-  background: #161c26; border: 1px solid #2a3a5a;
+  background: #0e2218; border: 1px solid #2a6a45;
   border-radius: var(--radius); padding: 12px; margin-bottom: 8px;
 }
 .sec-title { font-size: 10px; font-weight: 700; color: var(--text3); letter-spacing: .08em; margin-bottom: 6px; }
@@ -491,7 +491,41 @@ body {
 /* ===== 実数値プレビュー ===== */
 .stat-preview { font-size: 12px; color: var(--text2); white-space: nowrap; }
 
-/* ===== リセットボタン ===== */
+/* ===== トリプルアクセル発数ボタン ===== */
+.triple-hits {
+  display: none; /* 通常は非表示、トリプルアクセル選択時に表示 */
+  gap: 4px;
+}
+.triple-hits.show { display: flex; }
+.triple-hit-btn {
+  background: var(--inp-bg); border: 1px solid var(--inp-bdr);
+  border-radius: 6px; color: var(--text2);
+  font-size: 11px; font-weight: 700;
+  padding: 4px 8px; cursor: pointer; line-height: 1;
+  transition: all .15s;
+}
+.triple-hit-btn.active {
+  background: #1a3a2a; border-color: var(--green);
+  color: var(--green);
+}
+.triple-hit-btn:active { opacity: .7; }
+
+/* ===== 連続技発数ボタン（詳細設定内） ===== */
+.multi-hit-row {
+  display: flex; gap: 6px;
+}
+.multi-hit-btn {
+  flex: 1; background: var(--inp-bg); border: 1px solid var(--inp-bdr);
+  border-radius: 6px; color: var(--text2);
+  font-size: 11px; font-weight: 700;
+  padding: 6px 0; cursor: pointer; line-height: 1;
+  transition: all .15s; text-align: center;
+}
+.multi-hit-btn.active {
+  background: #1a3a2a; border-color: var(--green);
+  color: var(--green);
+}
+.multi-hit-btn:active { opacity: .7; }
 .reset-btn {
   background: #1a1a2a; border: 1px solid var(--border2);
   border-radius: var(--radius-sm); color: var(--text2); font-size: 12px; padding: 6px 14px; cursor: pointer;
@@ -651,6 +685,27 @@ body {
   font-size: 11px; color: var(--text2);
   text-align: center; margin-bottom: 4px;
 }
+/* 現在HP入力行 */
+.hp-now-row {
+  display: flex; align-items: center; gap: 6px;
+  margin-bottom: 8px;
+}
+.hp-now-label {
+  font-size: 11px; color: var(--text2); white-space: nowrap;
+}
+.hp-now-inp {
+  width: 64px; background: var(--inp-bg);
+  border: 1px solid var(--inp-bdr); border-radius: 6px;
+  color: var(--text); font-size: 15px; font-weight: 700;
+  text-align: center; padding: 3px 4px;
+  -moz-appearance: textfield;
+  touch-action: auto;
+}
+.hp-now-inp::-webkit-inner-spin-button,
+.hp-now-inp::-webkit-outer-spin-button { -webkit-appearance: none; }
+.hp-now-inp:focus { border-color: var(--accent); outline: none; }
+.hp-now-sep { font-size: 13px; color: var(--text3); }
+.hp-now-max { font-size: 13px; color: var(--text2); min-width: 28px; }
 </style>
 </head>
 <body>
@@ -750,7 +805,8 @@ body {
     <span id="atk-stat-preview" style="display:none;"></span>
 
     <!-- 特性・道具 -->
-    <div class="ab-section">
+    <div class="ab-section" style="margin-bottom:0;">
+      <div class="ab-title">攻撃側 特性 / 道具</div>
       <div class="ab-row" style="margin-bottom:4px;">
         <span class="ab-lbl" style="min-width:28px;">特性</span>
         <select class="ab-sel" id="atk-ability-sel" onchange="onAtkAbilityChange()" style="flex:1;">
@@ -759,8 +815,6 @@ body {
         <span id="atk-ability-desc" style="font-size:10px;color:var(--text3);white-space:nowrap;"></span>
         <input class="nat-tog" type="checkbox" id="atk-ability-on" onchange="calcDmg()" title="特性補正ON/OFF">
       </div>
-    </div>
-    <div class="ab-section" style="margin-bottom:0;">
       <div class="ab-row">
         <span class="ab-lbl" style="min-width:28px;">道具</span>
         <select class="ab-sel" id="atk-item-sel" onchange="calcDmg()" style="flex:1;">
@@ -942,6 +996,12 @@ body {
       <span class="lbl">威力</span>
       <input class="inp-num" type="number" id="move-power" placeholder="—"
         oninput="calcDmg()" onclick="this.select()" min="1" max="999" style="width:80px;">
+      <!-- トリプルアクセル選択時のみ表示される発数ボタン -->
+      <div class="triple-hits" id="triple-hits">
+        <button class="triple-hit-btn active" id="triple-hit-1" onclick="setTripleHits(1)">1発</button>
+        <button class="triple-hit-btn" id="triple-hit-2" onclick="setTripleHits(2)">2発</button>
+        <button class="triple-hit-btn" id="triple-hit-3" onclick="setTripleHits(3)">3発</button>
+      </div>
     </div>
 
     <!-- タイプ一致 -->
@@ -1073,17 +1133,39 @@ body {
       <!-- HP割合設定 -->
       <div class="detail-section">
         <div class="detail-section-title">HP 割合設定</div>
+        <!-- 現在HP表示・入力（スライダーの上） -->
+        <div class="hp-now-row">
+          <span class="hp-now-label">現在HP</span>
+          <!-- x部分：直接入力可能 -->
+          <input class="hp-now-inp" type="number" id="hp-now-inp"
+            min="1" placeholder="—"
+            oninput="onHpNowInput(this.value)" onclick="this.select()">
+          <span class="hp-now-sep">/</span>
+          <span class="hp-now-max" id="hp-now-max">—</span>
+        </div>
+        <!-- HP割合スライダー -->
         <div class="hp-pct-row">
           <span class="hp-pct-label">HP%</span>
           <input class="hp-pct-slider" type="range" id="hp-pct-slider"
-            min="0" max="100" value="100"
+            min="1" max="100" value="100"
             oninput="onHpPctSlider(this.value)">
           <span class="hp-pct-val" id="hp-pct-val-disp">100%</span>
         </div>
-        <div class="hp-pct-real" id="hp-pct-real-disp">—</div>
       </div>
 
       <!-- 今後の詳細設定をここに追加 -->
+
+      <!-- 連続技 発数設定（トリプルアクセル以外の連続技用） -->
+      <div class="detail-section" id="multi-hit-section">
+        <div class="detail-section-title">連続技 発数</div>
+        <div class="multi-hit-row">
+          <button class="multi-hit-btn active" id="multi-hit-1" onclick="setMultiHits(1)">1発</button>
+          <button class="multi-hit-btn" id="multi-hit-2" onclick="setMultiHits(2)">2発</button>
+          <button class="multi-hit-btn" id="multi-hit-3" onclick="setMultiHits(3)">3発</button>
+          <button class="multi-hit-btn" id="multi-hit-4" onclick="setMultiHits(4)">4発</button>
+          <button class="multi-hit-btn" id="multi-hit-5" onclick="setMultiHits(5)">5発</button>
+        </div>
+      </div>
     </div><!-- /#detail-area -->
 
   </div><!-- /.sheet-scroll -->
@@ -1110,6 +1192,8 @@ let wazaAcIdx = -1;
 let hpPctOverride = 100;       // HP割合（0〜100）、100=フルHP
 let drawerOpen    = false;      // ドロワー開閉状態
 let swipeStartY   = 0;          // スワイプ開始Y座標
+let tripleHits    = 1;          // トリプルアクセルの発数（1〜3）
+let multiHits     = 1;          // 連続技の発数（1〜5）
 
 // ============================================================
 // ユーティリティ
@@ -1721,6 +1805,19 @@ function wazaSelect(name, power, cat){
       }
     }
   }
+  // トリプルアクセルのとき発数ボタンを表示、それ以外は非表示
+  const tripleWrap = document.getElementById('triple-hits');
+  const multiSec   = document.getElementById('multi-hit-section');
+  if(name === 'トリプルアクセル'){
+    if(tripleWrap) tripleWrap.classList.add('show');
+    if(multiSec)   multiSec.style.display = 'none'; // 連続技セクションを隠す
+    tripleHits = 1;
+    updateTripleHitsBtns();
+  } else {
+    if(tripleWrap) tripleWrap.classList.remove('show');
+    if(multiSec)   multiSec.style.display = ''; // 連続技セクションを表示
+    tripleHits = 1;
+  }
   // 参照ステータスラベルを更新
   updateAtkStatRefLabel(name);
   autoTypeCalc();
@@ -1924,15 +2021,19 @@ function onEvInput(side){
   // トグルボタン表示更新
   const idMap={atk:'atk-ev',def:'def-ev',hp:'hp-ev'};
   if(idMap[side]) updateEvTogBtn(idMap[side]);
-  if(side==='atk'&&atkBaseRaw!==null){
+
+  // 努力値変更時は常に実数値を再計算（ポケモン選択中・手動入力済みどちらも）
+  if(side==='atk' && atkBaseRaw!==null){
     const ev=clampEv(document.getElementById('atk-ev').value);
     const nat=getAtkNat();
     document.getElementById('atk-val').value=statCalc(atkBaseRaw,ev,nat,false);
-  } else if(side==='def'&&defBaseRaw!==null){
+  }
+  if(side==='def' && defBaseRaw!==null){
     const ev=clampEv(document.getElementById('def-ev').value);
     const nat=getDefNat();
     document.getElementById('def-val').value=statCalc(defBaseRaw,ev,nat,false);
-  } else if(side==='hp'&&hpBaseRaw!==null){
+  }
+  if(side==='hp' && hpBaseRaw!==null){
     const ev=clampEv(document.getElementById('hp-ev').value);
     document.getElementById('def-hp').value=statCalc(hpBaseRaw,ev,1.0,true);
   }
@@ -1940,9 +2041,42 @@ function onEvInput(side){
 }
 
 function onNatChange(side){ onEvInput(side); } // 旧互換
-function onAtkValInput(){ atkBaseRaw=null; calcDmg(); }
-function onDefValInput(){ defBaseRaw=null; calcDmg(); }
-function onHpInput()    { hpBaseRaw=null;  calcDmg(); }
+// 実数値を手動入力したとき
+// ポケモン選択中（BaseRawあり）は種族値を保持したままcalcDmgのみ呼ぶ
+// ポケモン未選択（BaseRawなし）のときだけBaseRawをnullにする
+function onAtkValInput(){ calcDmg(); }
+function onDefValInput(){ calcDmg(); }
+function onHpInput()    { calcDmg(); }
+
+/** トリプルアクセルの発数ボタンを押したとき */
+function setTripleHits(n){
+  tripleHits = n;
+  updateTripleHitsBtns();
+  calcDmg();
+}
+
+/** トリプルアクセル発数ボタンのアクティブ状態を更新 */
+function updateTripleHitsBtns(){
+  [1,2,3].forEach(n => {
+    const btn = document.getElementById(`triple-hit-${n}`);
+    if(btn) btn.classList.toggle('active', n === tripleHits);
+  });
+}
+
+/** 連続技の発数ボタンを押したとき */
+function setMultiHits(n){
+  multiHits = n;
+  updateMultiHitsBtns();
+  calcDmg();
+}
+
+/** 連続技発数ボタンのアクティブ状態を更新 */
+function updateMultiHitsBtns(){
+  [1,2,3,4,5].forEach(n => {
+    const btn = document.getElementById(`multi-hit-${n}`);
+    if(btn) btn.classList.toggle('active', n === multiHits);
+  });
+}
 
 function updateStatPreview(side){
   if(side==='atk'){
@@ -2264,35 +2398,60 @@ function calcDmg(){
 
   let dmgs; // 確定数・HPバー・乱数表に使う配列
 
-  if(bond){
+  const resDmg=document.getElementById('res-dmg');
+  const resPct=document.getElementById('res-pct');
+
+  // トリプルアクセル：1発(20)・2発(20+40)・3発(20+40+60)
+  if(moveName === 'トリプルアクセル'){
+    // 各発の威力でベースダメージを計算
+    const triPowers = [20, 40, 60].slice(0, tripleHits);
+    const triDmgsList = triPowers.map(tp => {
+      const tpFinal = fiveRound(tp * powerRateFinal / 4096); // 威力補正を各発に適用
+      const tBase1  = Math.floor(22 * tpFinal * atkFinal / defFinal);
+      const tBase2  = Math.floor(tBase1 / 50) + 2;
+      const tBase3  = fiveRound(tBase2 * weatherMul);
+      const tBase4  = fiveRound(tBase3 * crit);
+      return randList.map(r => applyRates(Math.floor(tBase4 * r)));
+    });
+
+    // 各乱数インデックスで全発の合計ダメージを計算
+    dmgs = randList.map((_, i) => triDmgsList.reduce((sum, d) => sum + d[i], 0));
+
+    const minDmg = Math.min(...dmgs), maxDmg = Math.max(...dmgs);
+    const minPer = (minDmg/hp*100).toFixed(1), maxPer = (maxDmg/hp*100).toFixed(1);
+
+    // 表示：合計ダメージのみ
+    resDmg.textContent = minDmg===maxDmg ? String(minDmg) : `${minDmg}〜${maxDmg}`;
+    resPct.textContent = minPer===maxPer ? `${minPer}%` : `${minPer}%〜${maxPer}%`;
+    const maxP = parseFloat(maxPer);
+    resDmg.style.color = maxP>=100?'var(--red)':maxP>=50?'var(--yellow)':'var(--atk)';
+    resPct.style.color = maxP>=100?'var(--red)':maxP>=50?'var(--yellow)':'var(--text)';
+
+  } else if(bond){
     // 親子愛: 各乱数で「通常ダメージ + ×0.25ダメージ」を足した16通り
     const dmgs1 = randList.map(r=>applyRates(Math.floor(baseNormal*r)));  // 1発目
     const dmgs2 = randList.map(r=>applyRates(Math.floor(baseBond*r)));    // 2発目(×0.25)
-    dmgs = dmgs1.map((d,i)=>d+dmgs2[i]); // 同じ乱数インデックス同士を足す
-
-    const minDmg=Math.min(...dmgs), maxDmg=Math.max(...dmgs);
-    const minPer=(minDmg/hp*100).toFixed(1), maxPer=(maxDmg/hp*100).toFixed(1);
-
-    const resDmg=document.getElementById('res-dmg');
-    const resPct=document.getElementById('res-pct');
+    dmgs = dmgs1.map((d,i)=>d+dmgs2[i]);
     const min1=Math.min(...dmgs1),max1=Math.max(...dmgs1);
     const min2=Math.min(...dmgs2),max2=Math.max(...dmgs2);
-    // 「1発目+2発目 = 合計」形式で表示
-    resDmg.textContent = min1===max1&&min2===max2
-      ? `${min1}+${min2}=${minDmg}`
-      : `${min1}+${min2}〜${max1}+${max2}=${minDmg}〜${maxDmg}`;
+    const minDmg=Math.min(...dmgs), maxDmg=Math.max(...dmgs);
+    const minPer=(minDmg/hp*100).toFixed(1), maxPer=(maxDmg/hp*100).toFixed(1);
+    resDmg.textContent = minDmg===maxDmg ? String(minDmg) : `${minDmg}〜${maxDmg}`;
     resPct.textContent = minPer===maxPer ? `${minPer}%` : `${minPer}%〜${maxPer}%`;
     const maxP=parseFloat(maxPer);
     resDmg.style.color=maxP>=100?'var(--red)':maxP>=50?'var(--yellow)':'var(--atk)';
     resPct.style.color=maxP>=100?'var(--red)':maxP>=50?'var(--yellow)':'var(--text)';
   } else {
-    dmgs = randList.map(r=>applyRates(Math.floor(baseFinal*r)));
-
+    const singleDmgs = randList.map(r=>applyRates(Math.floor(baseFinal*r)));
+    if(multiHits <= 1){
+      // 通常（1発）
+      dmgs = singleDmgs;
+    } else {
+      // 連続技：同じダメージをmultiHits発分合計
+      dmgs = singleDmgs.map(d => d * multiHits);
+    }
     const minDmg=Math.min(...dmgs), maxDmg=Math.max(...dmgs);
     const minPer=(minDmg/hp*100).toFixed(1), maxPer=(maxDmg/hp*100).toFixed(1);
-
-    const resDmg=document.getElementById('res-dmg');
-    const resPct=document.getElementById('res-pct');
     resDmg.textContent=minDmg===maxDmg?String(minDmg):`${minDmg}〜${maxDmg}`;
     resPct.textContent=minPer===maxPer?`${minPer}%`:`${minPer}%〜${maxPer}%`;
     const maxP=parseFloat(maxPer);
@@ -2300,6 +2459,7 @@ function calcDmg(){
     resPct.style.color=maxP>=100?'var(--red)':maxP>=50?'var(--yellow)':'var(--text)';
   }
 
+  // 分岐後に1回だけ計算（重複排除）
   const minDmg=Math.min(...dmgs), maxDmg=Math.max(...dmgs);
 
   // 確定数
@@ -2330,9 +2490,6 @@ function calcDmg(){
   updateHpBar(minDmg, maxDmg, hp);
   renderRandTable(dmgs, hp, randList);
   updateSummary();
-  // 乱数表の更新でresult-innerの高さが変わるためシート高さを再計算
-  requestAnimationFrame(() => { drawerOpen ? expandSheet() : collapseSheet(); });
-
 }
 
 // ============================================================
@@ -2447,13 +2604,13 @@ function clearResult(){
   document.getElementById('hp-bar-min').style.width='0%';
   document.getElementById('hp-bar-range').style.width='0%';
   const hppct = document.getElementById('hp-bar-hppct');
-  if(hppct) hppct.style.width = '0%'; // 灰色HP割合削減バーもリセット
+  if(hppct) hppct.style.width = '0%';
   document.getElementById('hp-bar-remain').textContent='';
-  document.getElementById('hp-bar-max').textContent=''; // 右端HP実数値もリセット
+  document.getElementById('hp-bar-max').textContent='';
   document.getElementById('rand-row-pct').innerHTML='';
   document.getElementById('rand-row-val').innerHTML='';
-  // 乱数表が消えてresult-innerの高さが変わるためシート高さを再計算
-  requestAnimationFrame(() => { drawerOpen ? expandSheet() : collapseSheet(); });
+  // HP割合UIも最新状態に同期
+  syncHpPctUI();
 }
 
 // ============================================================
@@ -2690,6 +2847,14 @@ function resetAll(){
     if(desc) desc.textContent = '';
   });
   clearResult();
+  // トリプルアクセル・連続技発数をリセット
+  tripleHits = 1; multiHits = 1;
+  const triWrap = document.getElementById('triple-hits');
+  if(triWrap) triWrap.classList.remove('show');
+  const multiSec = document.getElementById('multi-hit-section');
+  if(multiSec) multiSec.style.display = '';
+  updateTripleHitsBtns();
+  updateMultiHitsBtns();
   // HP割合をリセット＆シートを閉じた状態に戻す
   hpPctOverride = 100;
   drawerOpen = false;
@@ -2708,13 +2873,9 @@ function resetAll(){
  * 計算結果エリア（result-inner）＋ハンドルバー分だけを見せる
  */
 function sheetCollapsedHeight(){
-  const inner  = document.getElementById('sheet-scroll');
   const handle = document.getElementById('sheet-handle');
-  const result = inner ? inner.querySelector('.result-inner') : null;
+  const result = document.getElementById('sheet-scroll')?.querySelector('.result-inner');
   if(!result || !handle) return 0;
-  // ハンドル高さ＋result-innerの実高さ＋セーフエリア
-  const safeBottom = window.visualViewport
-    ? (window.innerHeight - window.visualViewport.height) : 0;
   return handle.offsetHeight + result.offsetHeight + 8; // 8px=下余白
 }
 
@@ -2725,19 +2886,17 @@ function collapseSheet(){
   if(!footer) return;
   const h = sheetCollapsedHeight();
   footer.style.height = h + 'px';
-  // メインコンテンツの下余白をフッター高さに合わせる
   document.body.style.paddingBottom = h + 'px';
 }
 
 /** シートを開いた高さにセット（詳細設定が見える） */
 function expandSheet(){
   drawerOpen = true;
-  syncHpPctUI(); // スライダー表示を最新に同期
+  syncHpPctUI();
   const footer = document.getElementById('result-footer');
   const scroll = document.getElementById('sheet-scroll');
   const handle = document.getElementById('sheet-handle');
   if(!footer || !scroll || !handle) return;
-  // コンテンツ全体の高さ（max 65vh）
   const maxH  = Math.floor(window.innerHeight * 0.65);
   const fullH = scroll.scrollHeight + handle.offsetHeight + 8;
   const h     = Math.min(fullH, maxH);
@@ -2754,6 +2913,15 @@ function toggleSheet(){
 function openDrawer()  { expandSheet(); }
 function closeDrawer() { collapseSheet(); }
 
+// result-innerの高さ変化をResizeObserverで監視→シート高さを自動更新
+// calcDmgやclearResultからのrequestAnimationFrameが不要になる
+const _resultInnerEl = document.getElementById('sheet-scroll')?.querySelector('.result-inner');
+if(_resultInnerEl && window.ResizeObserver){
+  new ResizeObserver(() => {
+    drawerOpen ? expandSheet() : collapseSheet();
+  }).observe(_resultInnerEl);
+}
+
 /** HP割合スライダーが動いたとき */
 function onHpPctSlider(val){
   hpPctOverride = parseInt(val);
@@ -2761,27 +2929,44 @@ function onHpPctSlider(val){
   calcDmg(); // ダメージ再計算（HPバーにも反映）
 }
 
-/** スライダー表示とHP実数値プレビューを同期 */
+/** 現在HP入力欄を直接入力したとき → HP割合を逆算してスライダーに反映 */
+function onHpNowInput(val){
+  const hpFull = parseInt(document.getElementById('def-hp').value) || 0;
+  const hpNow  = Math.max(1, parseInt(val) || 1);
+  if(!hpFull) return;
+  // 実数値からHP割合を逆算（1〜100にクランプ）
+  hpPctOverride = Math.min(100, Math.max(1, Math.round(hpNow / hpFull * 100)));
+  syncHpPctUI();
+  calcDmg();
+}
+
+/** スライダー・現在HP入力欄・%表示を同期 */
 function syncHpPctUI(){
   const slider   = document.getElementById('hp-pct-slider');
   const valDisp  = document.getElementById('hp-pct-val-disp');
-  const realDisp = document.getElementById('hp-pct-real-disp');
+  const nowInp   = document.getElementById('hp-now-inp');
+  const nowMax   = document.getElementById('hp-now-max');
   if(!slider) return;
 
+  const hpFull = parseInt(document.getElementById('def-hp').value) || 0;
+
+  // フルHP表示を更新
+  if(nowMax) nowMax.textContent = hpFull || '—';
+
+  // スライダーの値を同期
   slider.value = hpPctOverride;
 
   const pct = hpPctOverride;
+
+  // %表示（色を割合に応じて変化）
   valDisp.textContent = pct + '%';
   valDisp.style.color = pct <= 25 ? 'var(--red)' : pct <= 50 ? 'var(--yellow)' : 'var(--green)';
 
-  const hpFull = parseInt(document.getElementById('def-hp').value) || 0;
-  if(hpFull){
+  // 現在HP入力欄を更新（ユーザーが直接入力中でなければ）
+  if(hpFull && nowInp && document.activeElement !== nowInp){
     const hpNow = pct >= 100 ? hpFull : Math.max(1, Math.floor(hpFull * pct / 100));
-    realDisp.textContent = `現在HP: ${hpNow} / ${hpFull}`;
-    realDisp.style.color = 'var(--text2)';
-  } else {
-    realDisp.textContent = '防御側のHPを入力してください';
-    realDisp.style.color = 'var(--text3)';
+    nowInp.value = hpNow;
+    nowInp.max   = hpFull;
   }
 
   // スライダー背景グラデーション
@@ -2798,19 +2983,23 @@ document.addEventListener('DOMContentLoaded', () => {
   // ハンドルバータップでトグル
   handle.addEventListener('click', toggleSheet);
 
-  // フッター全体のtouchmoveで背後のページスクロールを完全ブロック
-  // ただしスライダー上のタッチはブラウザに処理させる
-  footer.addEventListener('touchmove', e => {
-    if(e.target.closest('.hp-pct-slider')) return; // スライダーは通す
-    e.preventDefault();
-  }, { passive: false });
+  // フッターに触れたらbodyスクロールを止める
+  footer.addEventListener('touchstart', e => {
+    document.body.style.overflow = 'hidden';
+    swipeStartY = e.touches[0].clientY;
+  }, { passive: true });
 
-  // フッター全体でスワイプ判定（result-inner・乱数表含む全エリア）
-  footer.addEventListener('touchstart', e => { swipeStartY = e.touches[0].clientY; }, { passive: true });
+  // フッターから離れたらbodyスクロールを戻す
   footer.addEventListener('touchend', e => {
+    document.body.style.overflow = '';
     const dy = swipeStartY - e.changedTouches[0].clientY;
     if(dy > 30 && !drawerOpen) expandSheet();   // 上スワイプ30px以上で開く
     if(dy < -40 && drawerOpen) collapseSheet(); // 下スワイプ40px以上で閉じる
+  }, { passive: true });
+
+  // 指がフッター外に出たときもbodyスクロールを戻す
+  footer.addEventListener('touchcancel', () => {
+    document.body.style.overflow = '';
   }, { passive: true });
 
   // シート外タップで閉じる
