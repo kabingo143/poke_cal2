@@ -510,7 +510,17 @@ body {
 }
 .triple-hit-btn:active { opacity: .7; }
 
-/* ===== 連続技発数ボタン（詳細設定内） ===== */
+/* 特性 固有/汎用トグルボタン */
+.ab-mode-btn {
+  background: var(--inp-bg); border: 1px solid var(--inp-bdr);
+  border-radius: 4px; color: var(--text3);
+  font-size: 10px; font-weight: 700;
+  padding: 2px 6px; cursor: pointer; white-space: nowrap;
+  transition: all .15s;
+}
+.ab-mode-btn.active {
+  background: #1a3a2a; border-color: var(--green); color: var(--green);
+}
 .multi-hit-row {
   display: flex; gap: 6px;
 }
@@ -809,28 +819,33 @@ body {
       <div class="ab-title">攻撃側 特性 / 道具</div>
       <div class="ab-row" style="margin-bottom:4px;">
         <span class="ab-lbl" style="min-width:28px;">特性</span>
+        <!-- 固有/汎用トグル -->
+        <div style="display:flex;gap:2px;margin-right:4px;">
+          <button class="ab-mode-btn active" id="atk-ab-mode-native" onclick="setAbilityMode('atk','native')">固有</button>
+          <button class="ab-mode-btn" id="atk-ab-mode-general" onclick="setAbilityMode('atk','general')">汎用</button>
+        </div>
         <select class="ab-sel" id="atk-ability-sel" onchange="onAtkAbilityChange()" style="flex:1;">
           <option value="">—</option>
         </select>
-        <span id="atk-ability-desc" style="font-size:10px;color:var(--text3);white-space:nowrap;"></span>
-        <input class="nat-tog" type="checkbox" id="atk-ability-on" onchange="calcDmg()" title="特性補正ON/OFF">
+        <span id="atk-ability-desc" style="display:none;"></span>
+        <input class="nat-tog" type="checkbox" id="atk-ability-on" onchange="onAtkAbilityChange()" title="特性補正ON/OFF">
       </div>
       <div class="ab-row">
         <span class="ab-lbl" style="min-width:28px;">道具</span>
         <select class="ab-sel" id="atk-item-sel" onchange="calcDmg()" style="flex:1;">
           <option value="4096|none">なし</option>
           <optgroup label="威力補正">
-            <option value="4505|power">×1.09 威力（タイプ強化系）</option>
-            <option value="4506|power">×1.1 威力（パンチグローブ）</option>
-            <option value="4915|power">×1.2 威力（おめん等）</option>
-            <option value="5325|power">×1.3 威力（タイプジュエル）</option>
+            <option value="4505|power">×1.09 (ちからのハチマキ)</option>
+            <option value="4506|power">×1.1（パンチグローブ）</option>
+            <option value="4915|power">×1.2（おめん,タイプ強化）</option>
+            <option value="5325|power">×1.3（ジュエル）</option>
           </optgroup>
           <optgroup label="攻撃補正">
-            <option value="6144|atk">×1.5 攻撃（こだわりハチマキ等）</option>
+            <option value="6144|atk">×1.5（こだわり系）</option>
           </optgroup>
           <optgroup label="ダメージ補正">
-            <option value="4915|damage">×1.2 ダメージ（達人の帯）</option>
-            <option value="5324|damage">×1.3 ダメージ（命の珠）</option>
+            <option value="4915|damage">×1.2（達人の帯）</option>
+            <option value="5324|damage">×1.3（命の珠）</option>
           </optgroup>
         </select>
       </div>
@@ -953,10 +968,15 @@ body {
       <div class="ab-title">防御側 特性 / 道具</div>
       <div class="ab-row" style="margin-bottom:4px;">
         <span class="ab-lbl" style="min-width:28px;">特性</span>
+        <!-- 固有/汎用トグル -->
+        <div style="display:flex;gap:2px;margin-right:4px;">
+          <button class="ab-mode-btn active" id="def-ab-mode-native" onclick="setAbilityMode('def','native')">固有</button>
+          <button class="ab-mode-btn" id="def-ab-mode-general" onclick="setAbilityMode('def','general')">汎用</button>
+        </div>
         <select class="ab-sel" id="def-ability-sel" onchange="onDefAbilityChange()" style="flex:1;">
           <option value="">—</option>
         </select>
-        <span id="def-ability-desc" style="font-size:10px;color:var(--text3);white-space:nowrap;"></span>
+        <span id="def-ability-desc" style="display:none;"></span>
         <input class="nat-tog" type="checkbox" id="def-ability-on" onchange="calcDmg()" title="特性補正ON/OFF">
       </div>
       <div class="ab-row">
@@ -964,10 +984,10 @@ body {
         <select class="ab-sel" id="def-item-sel" onchange="calcDmg()" style="flex:1;">
           <option value="4096|none">なし</option>
           <optgroup label="防御補正">
-            <option value="6144|def">×1.5 防御（輝石）</option>
+            <option value="6144|def">×1.5（輝石､チョッキ）</option>
           </optgroup>
           <optgroup label="ダメージ補正">
-            <option value="2048|damage">×0.5 ダメージ（半減実）</option>
+            <option value="2048|damage">×0.5（半減実）</option>
           </optgroup>
         </select>
       </div>
@@ -1010,7 +1030,7 @@ body {
       <div class="stab-btn-grp">
         <button class="stab-btn" id="stab-none" onclick="setStab(1.0)">なし</button>
         <button class="stab-btn active" id="stab-normal" onclick="setStab(1.5)">×1.5</button>
-        <button class="stab-btn" id="stab-tera" onclick="setStab(2.0)">テラス×2.0</button>
+        <button class="stab-btn" id="stab-tera" onclick="setStab(2.0)">×2.0</button>
       </div>
     </div>
 
@@ -1021,15 +1041,15 @@ body {
         <button class="stab-btn active" id="type-1" onclick="setTypeEff(1.0)">×1.0</button>
         <button class="stab-btn" id="type-2" onclick="setTypeEff(2.0)">×2</button>
         <button class="stab-btn" id="type-4" onclick="setTypeEff(4.0)">×4</button>
-        <button class="stab-btn" id="type-h" onclick="setTypeEff(0.5)">×½</button>
-        <button class="stab-btn" id="type-q" onclick="setTypeEff(0.25)">×¼</button>
+        <button class="stab-btn" id="type-h" onclick="setTypeEff(0.5)">×1/2</button>
+        <button class="stab-btn" id="type-q" onclick="setTypeEff(0.25)">×1/4</button>
       </div>
     </div>
 
     <!-- 補正チェック -->
     <div class="mod-grid">
       <label class="mod-item"><input type="checkbox" id="mod-burn" onchange="calcDmg()"><div class="mod-check"></div><span class="mod-name">やけど</span></label>
-      <label class="mod-item"><input type="checkbox" id="mod-wall" onchange="calcDmg()"><div class="mod-check"></div><span class="mod-name">リフレクター/かべ</span></label>
+      <label class="mod-item"><input type="checkbox" id="mod-wall" onchange="calcDmg()"><div class="mod-check"></div><span class="mod-name">リフレクター/光壁</span></label>
       <label class="mod-item"><input type="checkbox" id="mod-charge" onchange="calcDmg()"><div class="mod-check"></div><span class="mod-name">じゅうでん</span></label>
       <label class="mod-item"><input type="checkbox" id="mod-bond" onchange="calcDmg()"><div class="mod-check"></div><span class="mod-name">親子愛</span></label>
     </div>
@@ -1048,13 +1068,13 @@ body {
 
     <!-- フィールド -->
     <div class="stab-sel-wrap" style="margin-bottom:0;">
-      <span class="stab-lbl">フィールド</span>
+      <span class="stab-lbl">ﾌｨｰﾙﾄﾞ</span>
       <div class="stab-btn-grp">
         <button class="stab-btn active" id="field-none"  onclick="setField('none')">なし</button>
-        <button class="stab-btn" id="field-elec"  onclick="setField('elec')">⚡エレキ</button>
-        <button class="stab-btn" id="field-grass" onclick="setField('grass')">🌿グラス</button>
-        <button class="stab-btn" id="field-psycho" onclick="setField('psycho')">🔮サイコ</button>
-        <button class="stab-btn" id="field-mist"  onclick="setField('mist')">🌫ミスト</button>
+        <button class="stab-btn" id="field-elec"  onclick="setField('elec')">エレキ</button>
+        <button class="stab-btn" id="field-grass" onclick="setField('grass')">グラス</button>
+        <button class="stab-btn" id="field-psycho" onclick="setField('psycho')">サイコ</button>
+        <button class="stab-btn" id="field-mist"  onclick="setField('mist')">ミスト</button>
       </div>
     </div>
   </div>
@@ -1086,7 +1106,7 @@ body {
       ">急所</button>
       <input type="checkbox" id="mod-crit" style="display:none;">
       <!-- 計算内容サマリー -->
-      <div id="res-summary" style="font-size:10px;color:var(--text3);text-align:center;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:40px;"></div>
+      <div id="res-summary" style="font-size:12px;color:var(--text3);text-align:center;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-right:40px;"></div>
       <!-- ダメージ・割合・確定数 -->
       <div class="result-main">
         <div class="result-item">
@@ -1171,6 +1191,7 @@ body {
   </div><!-- /.sheet-scroll -->
 </div><!-- /.result-footer -->
 <script src="pokemon.js"></script>
+<script src="pokemon_ng.js"></script>
 <script src="waza.js"></script>
 <script>
 'use strict';
@@ -1194,6 +1215,19 @@ let drawerOpen    = false;      // ドロワー開閉状態
 let swipeStartY   = 0;          // スワイプ開始Y座標
 let tripleHits    = 1;          // トリプルアクセルの発数（1〜3）
 let multiHits     = 1;          // 連続技の発数（1〜5）
+
+// スロット管理（AスロットとBスロットで設定を保持）
+// 各スロットに攻撃側・防御側の設定を独立して保持
+// slotA = 最初に攻撃側に設定したポケモンのスロット
+// slotB = 最初に防御側に設定したポケモンのスロット
+const slotSettings = {
+  A: { atk: null, def: null },
+  B: { atk: null, def: null },
+};
+let currentAtkSlot = 'A'; // 現在攻撃側に表示しているスロット
+
+// ポケモンごとの特性記憶（ポケモン名→{ability, abilityOn}）
+const abilityMemory = new Map();
 
 // ============================================================
 // ユーティリティ
@@ -1242,6 +1276,10 @@ const ABILITY_MAP = {
   'すてみ':         {side:'atk', type:'power', val:4915},
   'エレキスキン':   {side:'atk', type:'power', val:4915},
   'フェアリースキン':{side:'atk', type:'power', val:4915},
+  'スカイスキン':   {side:'atk', type:'power', val:4915},
+  'フリーズスキン': {side:'atk', type:'power', val:4915},
+  'ドラゴンスキン': {side:'atk', type:'power', val:4915},
+  'ノーマルスキン': {side:'atk', type:'power', val:4915},
   'てつのこぶし':   {side:'atk', type:'power', val:4915},
   'ちからずく':     {side:'atk', type:'power', val:5325},
   'すなのちから':   {side:'atk', type:'power', val:5325},
@@ -1315,6 +1353,15 @@ function getAbilityRate(side, type, moveType){
   const on  = document.getElementById(onId);
   if(!sel || !on || !on.checked || !sel.value) return 4096;
   const name = sel.value;
+
+  // 汎用モードの独自値（__atk_power_4506 等）をパース
+  const generalMatch = name.match(/^__(atk|def)_(\w+)_(\d+)$/);
+  if(generalMatch){
+    const t = generalMatch[2]; // power/atk/def/damage
+    const v = parseInt(generalMatch[3]);
+    return t === type ? v : 4096;
+  }
+
   const info = ABILITY_MAP[name];
   if(!info) return 4096;
 
@@ -1486,6 +1533,10 @@ function applyPokeToSide(side, pokeName){
   const poke = getPD(pokeName);
   if(!poke) return;
 
+  // ポケモン変更時はそのサイドのスロット設定をリセット
+  const slot = side === 'atk' ? currentAtkSlot : (currentAtkSlot === 'A' ? 'B' : 'A');
+  slotSettings[slot][side] = null;
+
   // フォームをリセット（最初のフォームを選択）
   const firstKey = getForms(poke)[0];
   if(side === 'atk'){ atkPoke = poke; atkFormKey = firstKey; }
@@ -1520,9 +1571,9 @@ function updateAbilitySelect(side, fd){
     if(name === 'そうだいしょう'){
       // そうだいしょうは0〜3体の4択で追加
       [['そうだいしょう0','そうだいしょう（0体）'],
-       ['そうだいしょう1','そうだいしょう（1体）×1.1'],
-       ['そうだいしょう2','そうだいしょう（2体）×1.2'],
-       ['そうだいしょう3','そうだいしょう（3体）×1.3'],
+      ['そうだいしょう1','そうだいしょう（1体）×1.1'],
+      ['そうだいしょう2','そうだいしょう（2体）×1.2'],
+      ['そうだいしょう3','そうだいしょう（3体）×1.3'],
       ].forEach(([val, label]) => {
         const opt = document.createElement('option');
         opt.value = val; opt.textContent = label;
@@ -1539,17 +1590,19 @@ function updateAbilitySelect(side, fd){
     }
   });
 
-  // 以前選択していた特性が存在すれば維持、なければ最初の特性をセット
+  // abilityMemoryにポケモンの特性記憶があれば復元、なければprevを維持
+  const poke = side === 'atk' ? atkPoke : defPoke;
+  const mem  = poke ? abilityMemory.get(poke.n) : null;
   const allVals = [...sel.options].map(o => o.value);
-  if(prev && allVals.includes(prev)){
+  if(mem && allVals.includes(mem.ability)){
+    // 記憶した特性を復元
+    sel.value = mem.ability;
+    if(onEl) onEl.checked = mem.abilityOn || false;
+  } else if(prev && allVals.includes(prev)){
     sel.value = prev;
   } else if(abs.length > 0){
-    // そうだいしょうなら1体をデフォルト選択
     sel.value = abs[0] === 'そうだいしょう' ? 'そうだいしょう1' : abs[0];
   }
-  // デフォルトはOFF
-  onEl.checked = false;
-
   // 補正説明を更新
   updateAbilityDesc(side);
 }
@@ -1559,12 +1612,36 @@ function updateAbilityDesc(side){
   const sel  = document.getElementById(side+'-ability-sel');
   const desc = document.getElementById(side+'-ability-desc');
   if(!sel || !desc) return;
+  // 汎用モードの独自値はoptionのlabelをそのまま表示
+  const generalMatch = sel.value.match(/^__(atk|def)_(\w+)_(\d+)$/);
+  if(generalMatch){
+    desc.textContent = '';
+    return;
+  }
   const info = ABILITY_MAP[sel.value];
   desc.textContent = info ? abilityDesc(info, side) : (sel.value ? '（補正なし）' : '');
 }
 
-function onAtkAbilityChange(){ updateAbilityDesc('atk'); calcDmg(); }
-function onDefAbilityChange(){ updateAbilityDesc('def'); calcDmg(); }
+function onAtkAbilityChange(){
+  // 特性変更をポケモンごとに記憶
+  if(atkPoke){
+    abilityMemory.set(atkPoke.n, {
+      ability:   document.getElementById('atk-ability-sel')?.value || '',
+      abilityOn: document.getElementById('atk-ability-on')?.checked || false,
+    });
+  }
+  updateAbilityDesc('atk'); autoTypeCalc(); calcDmg();
+}
+function onDefAbilityChange(){
+  // 特性変更をポケモンごとに記憶
+  if(defPoke){
+    abilityMemory.set(defPoke.n, {
+      ability:   document.getElementById('def-ability-sel')?.value || '',
+      abilityOn: document.getElementById('def-ability-on')?.checked || false,
+    });
+  }
+  updateAbilityDesc('def'); calcDmg();
+}
 
 /** フォームデータをステータス入力欄に反映 */
 function applyFdToSide(side, fd){
@@ -1574,7 +1651,7 @@ function applyFdToSide(side, fd){
     const sk = atkType === 'A' ? 'at' : 'sa';
     atkBaseRaw = fd[sk];
     const ev  = clampEv(document.getElementById('atk-ev').value);
-    const nat = document.getElementById('atk-nat').checked ? 1.1 : 1.0;
+    const nat = getAtkNat(); // チェックボックスではなくボタンから取得
     document.getElementById('atk-val').value = statCalc(fd[sk], ev, nat, false);
     updateStatPreview('atk');
     // 特性名を表示（ab配列の最初の有効な特性）
@@ -1587,7 +1664,7 @@ function applyFdToSide(side, fd){
     const sk = defType === 'B' ? 'df' : 'sd';
     defBaseRaw = fd[sk];
     const ev  = clampEv(document.getElementById('def-ev').value);
-    const nat = document.getElementById('def-nat').checked ? 1.1 : 1.0;
+    const nat = getDefNat(); // チェックボックスではなくボタンから取得
     document.getElementById('def-val').value = statCalc(fd[sk], ev, nat, false);
     hpBaseRaw = fd.hp;
     const evH = clampEv(document.getElementById('hp-ev').value);
@@ -1619,15 +1696,24 @@ function applyFdToSide(side, fd){
 function searchPoke(q){
   if(!q || typeof PD === 'undefined') return [];
   const kq=hira2kata(q), hq=kata2hira(q);
-  const head=[], body=[];
+  const head=[], body=[], ng=[];
+  // POKE_NGが定義されていればSetに変換（高速判定）
+  const ngSet = (typeof POKE_NG !== 'undefined') ? new Set(POKE_NG) : new Set();
   for(const p of PD){
     const n=p.n;
-    if(n.startsWith(q)||n.startsWith(kq)||n.startsWith(hq)) head.push(n);
-    else if(n.includes(q)||n.includes(kq)||n.includes(hq)) body.push(n);
-    // 先頭一致20件を超えた時点で打ち切り（先頭優先を保証）
+    const isNg = ngSet.has(n);
+    const matchHead = n.startsWith(q)||n.startsWith(kq)||n.startsWith(hq);
+    const matchBody = n.includes(q)||n.includes(kq)||n.includes(hq);
+    if(isNg){
+      // NG指定は一番下にまとめる
+      if(matchHead || matchBody) ng.push(n);
+    } else {
+      if(matchHead) head.push(n);
+      else if(matchBody) body.push(n);
+    }
     if(head.length>=20) break;
   }
-  return [...head,...body].slice(0,20);
+  return [...head,...body,...ng].slice(0,20);
 }
 
 /**
@@ -1639,7 +1725,7 @@ function searchWaza(q){
   const kq=hira2kata(q), hq=kata2hira(q);
   const head=[], body=[];
   for(const w of WD){
-    if(w.p === null) continue; // 威力なし除外
+    if(w.c === 'へんか') continue; // 変化技は除外（威力なし）
     const n=w.n;
     if(n.startsWith(q)||n.startsWith(kq)||n.startsWith(hq)) head.push(w);
     else if(n.includes(q)||n.includes(kq)||n.includes(hq)) body.push(w);
@@ -1741,14 +1827,19 @@ function wazaSearch(q){
   if(!q){ drop.classList.remove('show'); return; }
   const hits = searchWaza(q);
   if(!hits.length){ drop.classList.remove('show'); return; }
-  const html = hits.map((w,i)=>
-    `<div class="ac-item" data-power="${w.p}" data-cat="${w.c||''}" data-name="${w.n.replace(/"/g,'&quot;')}" data-idx="${i}"
-      style="display:flex;gap:8px;justify-content:space-between;"
+  const html = hits.map((w,i)=>{
+    // 属性バッジ（waza.jsにa:["切","拳"]等があれば表示）
+    const badges = (w.a && w.a.length)
+      ? w.a.map(a=>`<span style="font-size:9px;color:var(--green);border:1px solid var(--green);border-radius:3px;padding:0 3px;line-height:1.6;">${a}</span>`).join('')
+      : '';
+    return `<div class="ac-item" data-power="${w.p}" data-cat="${w.c||''}" data-name="${w.n.replace(/"/g,'&quot;')}" data-idx="${i}"
+      style="display:flex;gap:6px;align-items:center;justify-content:space-between;"
       onmousedown="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')">
-      <span>${w.n}</span>
-      <span style="color:var(--yellow);font-size:11px;">${w.p}</span>
-    </div>`
-  ).join('');
+      <span style="flex:1;">${w.n}</span>
+      <span style="display:flex;gap:3px;">${badges}</span>
+      <span style="color:var(--yellow);font-size:11px;min-width:24px;text-align:right;">${w.p ?? '可変'}</span>
+    </div>`;
+  }).join('');
   showDrop(drop, document.getElementById('move-inp'), html);
   // 先頭候補を自動アクティブ
   wazaAcIdx = 0;
@@ -2001,7 +2092,7 @@ function changeRank(side, delta){
     defRank=Math.max(-6,Math.min(6,defRank+delta));
     const el=document.getElementById('def-rank-disp');
     el.textContent=defRank>0?'+'+defRank:defRank;
-    el.style.color=defRank>0?'var(--def)':defRank<0?'var(--atk)':'var(--text)';
+    el.style.color=defRank>0?'var(--atk)':defRank<0?'var(--def)':'var(--text)';
   }
   calcDmg();
 }
@@ -2040,7 +2131,89 @@ function onEvInput(side){
   updateStatPreview(side); calcDmg();
 }
 
-function onNatChange(side){ onEvInput(side); } // 旧互換
+// 特性モード（固有/汎用）
+const abilityMode = { atk: 'native', def: 'native' };
+
+// 汎用特性リスト（攻撃側・防御側共通で選べる特性）
+const GENERAL_ABILITIES_ATK = [
+  '',
+  'そうだいしょう1', 'そうだいしょう2', 'そうだいしょう3',
+  'すてみ', 'てつのこぶし', 'パンクロック',
+  'エレキスキン', 'フェアリースキン', 'スカイスキン', 'フリーズスキン', 'ドラゴンスキン', 'ノーマルスキン',
+  'ちからずく', 'すなのちから', 'アナライズ', 'かたいツメ',
+  'はりきり', 'ふしぎなまもり', 'いろめがね',
+  'へんげんじざい',
+];
+const GENERAL_ABILITIES_DEF = [
+  '',
+  'マルチスケイル', 'ファントムガード',
+  'もふもふ', 'ハードロック', 'フィルター', 'プリズムアーマー',
+  'ふしぎなまもり', 'いろめがね',
+  'パンクロック',
+];
+
+/** 固有/汎用モードを切り替えてセレクトを更新 */
+function setAbilityMode(side, mode){
+  abilityMode[side] = mode;
+  // ボタンのactive切替
+  document.getElementById(side+'-ab-mode-native').classList.toggle('active', mode === 'native');
+  document.getElementById(side+'-ab-mode-general').classList.toggle('active', mode === 'general');
+
+  const sel = document.getElementById(side+'-ability-sel');
+  if(!sel) return;
+  const prev = sel.value;
+
+  if(mode === 'native'){
+    // 固有モード：ポケモンの特性を表示
+    const poke = side === 'atk' ? atkPoke : defPoke;
+    const fk   = side === 'atk' ? atkFormKey : defFormKey;
+    const fd   = poke ? getFormData(poke, fk) : null;
+    updateAbilitySelect(side, fd);
+  } else {
+    // 汎用モード：補正値と特性名をセットで表示
+    const html = side === 'atk' ? `
+      <option value="">補正なし</option>
+      <optgroup label="威力補正">
+        <option value="__atk_power_4506">×1.1（大将1）</option>
+        <option value="__atk_power_4915">×1.2（スキン）</option>
+        <option value="__atk_power_5325">×1.3（固い爪）</option>
+        <option value="__atk_power_5448">×1.33（オーラ）</option>
+        <option value="__atk_power_6144">×1.5（テクニシャン）</option>
+      </optgroup>
+      <optgroup label="攻撃補正">
+        <option value="__atk_atk_5325">×1.3（ブースト）</option>
+        <option value="__atk_atk_5461">×1.333（緋緋）</option>
+        <option value="__atk_atk_6144">×1.5（猛火）</option>
+        <option value="__atk_atk_8192">×2.0（力持ち）</option>
+      </optgroup>
+      <optgroup label="防御補正">
+        <option value="__atk_def_3277">×0.75（災剣）</option>
+      </optgroup>
+      <optgroup label="ダメージ補正">
+        <option value="__atk_damage_6144">×1.5（スナイパー）</option>
+        <option value="__atk_damage_8192">×2.0（色眼鏡）</option>
+      </optgroup>
+    ` : `
+      <option value="">補正なし</option>
+      <optgroup label="攻撃補正">
+        <option value="__def_atk_2048">×0.5（耐熱）</option>
+        <option value="__def_atk_3277">×0.75（災器）</option>
+      </optgroup>
+      <optgroup label="防御補正">
+        <option value="__def_def_5325">×1.3（ブースト）</option>
+        <option value="__def_def_8192">×2.0（ファーコート）</option>
+      </optgroup>
+      <optgroup label="ダメージ補正">
+        <option value="__def_damage_2048">×0.5（マルスケ）</option>
+        <option value="__def_damage_3277">×0.75（フィルター）</option>
+      </optgroup>
+    `;
+    sel.innerHTML = html;
+    // 前の選択を維持できれば維持
+    if([...sel.options].some(o => o.value === prev)) sel.value = prev;
+    updateAbilityDesc(side);
+  }
+}
 // 実数値を手動入力したとき
 // ポケモン選択中（BaseRawあり）は種族値を保持したままcalcDmgのみ呼ぶ
 // ポケモン未選択（BaseRawなし）のときだけBaseRawをnullにする
@@ -2083,13 +2256,13 @@ function updateStatPreview(side){
     const el=document.getElementById('atk-stat-preview');
     if(!atkBaseRaw){el.textContent='';return;}
     const ev=clampEv(document.getElementById('atk-ev').value);
-    const nat=document.getElementById('atk-nat').checked?1.1:1.0;
+    const nat=getAtkNat();
     el.textContent='= '+statCalc(atkBaseRaw,ev,nat,false);
   } else if(side==='def'){
     const el=document.getElementById('def-stat-preview');
     if(!defBaseRaw){el.textContent='';return;}
     const ev=clampEv(document.getElementById('def-ev').value);
-    const nat=document.getElementById('def-nat').checked?1.1:1.0;
+    const nat=getDefNat();
     el.textContent='= '+statCalc(defBaseRaw,ev,nat,false);
   } else if(side==='hp'){
     const el=document.getElementById('hp-stat-preview');
@@ -2159,14 +2332,43 @@ function autoTypeCalc(){
   if(!moveName || typeof WD === 'undefined') return;
   const waza = WD.find(w => w.n === moveName);
   if(!waza) return;
-  const moveType = waza.t;
+
+  // ウェザーボールは天気に応じてタイプが変わる
+  const weatherBallTypeMap = { sunny:'ほのお', rain:'みず', sand:'いわ', snow:'こおり' };
+  let moveType = (moveName === 'ウェザーボール' && weather !== 'none')
+    ? weatherBallTypeMap[weather]
+    : waza.t;
+
+  // スキン系タイプ変換・へんげんじざい判定（特性ONのときのみ）
+  const atkAbilityNameAuto = document.getElementById('atk-ability-sel')?.selectedOptions[0]?.text || '';
+  const atkAbilityOnAuto   = document.getElementById('atk-ability-on')?.checked || false;
+  const skinMapAuto = {
+    'フェアリースキン': 'フェアリー',
+    'スカイスキン':     'ひこう',
+    'フリーズスキン':   'こおり',
+    'エレキスキン':     'でんき',
+    'ドラゴンスキン':   'ドラゴン',
+  };
+  if(atkAbilityOnAuto){
+    const skinTypeAuto = Object.keys(skinMapAuto).find(k => atkAbilityNameAuto.includes(k));
+    if(skinTypeAuto && moveType === 'ノーマル'){
+      moveType = skinMapAuto[skinTypeAuto];
+    } else if(atkAbilityNameAuto.includes('ノーマルスキン') && moveType !== 'ノーマル'){
+      moveType = 'ノーマル';
+    }
+  }
 
   // ===== STAB 自動判定 =====
-  if(atkPoke){
+  // へんげんじざい特性はすべての技でタイプ一致（×1.5）、特性ONのときのみ
+  const atkAbilityName = document.getElementById('atk-ability-sel')?.selectedOptions[0]?.text || '';
+  const atkAbilityOn   = document.getElementById('atk-ability-on')?.checked || false;
+  const isHengen = atkAbilityOn && atkAbilityName.includes('へんげんじざい');
+  if(isHengen){
+    if(stabVal !== 2.0) setStab(1.5); // テラス状態は維持
+  } else if(atkPoke){
     const atkFd = getFormData(atkPoke, atkFormKey);
     if(atkFd){
       const hasStab = atkFd.t1 === moveType || (atkFd.t2 && atkFd.t2 === moveType);
-      // テラスタル状態は手動なのでteras（×2.0）は変更しない
       if(stabVal !== 2.0){
         setStab(hasStab ? 1.5 : 1.0);
       }
@@ -2195,6 +2397,7 @@ function setWeather(v){
   ['none','sunny','rain','sand','snow'].forEach(k=>{
     document.getElementById('weather-'+k).classList.toggle('active', k===v);
   });
+  autoTypeCalc(); // 天気変更時にタイプ一致・タイプ相性を再計算
   calcDmg();
 }
 
@@ -2268,6 +2471,27 @@ function getWeatherStom(moveType){
 // ダメージ計算メイン
 // ============================================================
 function calcDmg(){
+  // 技名を先に取得（重さ依存技の威力事前計算に使用）
+  const currentWazaName = document.getElementById('move-inp').value;
+  const weightMoves = ['くさむすび','けたぐり','ヒートスタンプ','ヘビーボンバー'];
+
+  // 重さ依存技かつ威力がnullのとき、重さから威力を事前計算して威力欄にセット
+  if(weightMoves.includes(currentWazaName)){
+    const defFdPre  = defPoke ? getFormData(defPoke, defFormKey) : null;
+    const atkFdPre  = atkPoke ? getFormData(atkPoke, atkFormKey) : null;
+    const defWPre   = defFdPre?.w ?? null;
+    const atkWPre   = atkFdPre?.w ?? null;
+    const powerEl   = document.getElementById('move-power');
+
+    if((currentWazaName==='くさむすび'||currentWazaName==='けたぐり') && defWPre !== null){
+      const w = defWPre;
+      powerEl.value = w<10?20:w<25?40:w<50?60:w<100?80:w<200?100:120;
+    } else if((currentWazaName==='ヒートスタンプ'||currentWazaName==='ヘビーボンバー') && atkWPre!==null && defWPre!==null){
+      const ratio = defWPre / atkWPre;
+      powerEl.value = ratio>0.5?40:ratio>(1/3)?60:ratio>0.25?80:ratio>0.2?100:120;
+    }
+  }
+
   const power=parseInt(document.getElementById('move-power').value)||0;
   // HP実数値にHP割合を掛けて実効HP（割合設定が100以外なら補正）
   const hpFull = parseInt(document.getElementById('def-hp').value)||0;
@@ -2277,8 +2501,49 @@ function calcDmg(){
   const currentWaza = (typeof WD !== 'undefined')
     ? WD.find(w => w.n === document.getElementById('move-inp').value)
     : null;
-  const moveType = currentWaza ? currentWaza.t : null;
+  let moveType = currentWaza ? currentWaza.t : null;
   const moveName = currentWaza ? currentWaza.n : null;
+
+  // ウェザーボール：天気によって威力・タイプを変更
+  // 天気なし→威力50ノーマル、天気あり→威力100＋対応タイプ
+  const weatherBallTypeMap = { sunny:'ほのお', rain:'みず', sand:'いわ', snow:'こおり' };
+  let effectivePower = power;
+  if(moveName === 'ウェザーボール'){
+    if(weather !== 'none'){
+      effectivePower = 100;
+      moveType = weatherBallTypeMap[weather];
+      document.getElementById('move-power').value = 100;
+      updateMoveTypeBadge(moveType);
+    } else {
+      effectivePower = 50;
+      document.getElementById('move-power').value = 50;
+      updateMoveTypeBadge(currentWaza ? currentWaza.t : null);
+    }
+  }
+
+  // 重さ依存技の威力計算
+  // 防御側の重さを取得
+  const defFdW  = defPoke ? getFormData(defPoke, defFormKey) : null;
+  const defW    = defFdW?.w ?? null; // kg（nullなら手動入力値を使用）
+  // 攻撃側の重さを取得
+  const atkFdW  = atkPoke ? getFormData(atkPoke, atkFormKey) : null;
+  const atkW    = atkFdW?.w ?? null;
+
+  // くさむすび・けたぐり：防御側の重さで威力が決まる
+  if((moveName === 'くさむすび' || moveName === 'けたぐり') && defW !== null){
+    const w = defW;
+    const p = w < 10 ? 20 : w < 25 ? 40 : w < 50 ? 60 : w < 100 ? 80 : w < 200 ? 100 : 120;
+    effectivePower = p;
+    document.getElementById('move-power').value = p;
+  }
+
+  // ヒートスタンプ・ヘビーボンバー：攻撃側/防御側の重さ比で威力が決まる
+  if((moveName === 'ヒートスタンプ' || moveName === 'ヘビーボンバー') && atkW !== null && defW !== null){
+    const ratio = defW / atkW;
+    const p = ratio > 0.5 ? 40 : ratio > (1/3) ? 60 : ratio > 0.25 ? 80 : ratio > 0.2 ? 100 : 120;
+    effectivePower = p;
+    document.getElementById('move-power').value = p;
+  }
 
   /**
    * 特殊ステータス参照の技
@@ -2322,7 +2587,7 @@ function calcDmg(){
     const fd = getFormData(defPoke, defFormKey);
     if(fd){
       const evB  = clampEv(document.getElementById('def-ev').value);
-      const natB = document.getElementById('def-nat').checked ? 1.1 : 1.0;
+      const natB = getDefNat();
       def = statCalc(fd.df, evB, natB, false);
     } else {
       def = parseInt(document.getElementById('def-val').value)||0;
@@ -2343,10 +2608,43 @@ function calcDmg(){
   const defRate    = rateSelected("def");
   const damageRate = rateSelected("damage");
 
+  // スキン系特性：ノーマル技を別タイプに変換し×1.2
+  // ノーマルスキン：ノーマル以外の技をノーマルに変換し×1.2
+  // 条件に合わない場合・特性OFFの場合はpowerRate.atkAbiを4096（無効）に戻す
+  const atkAbilityNameCalc = document.getElementById('atk-ability-sel')?.selectedOptions[0]?.text || '';
+  const atkAbilityOnCalc   = document.getElementById('atk-ability-on')?.checked || false;
+  const skinMap = {
+    'フェアリースキン': 'フェアリー',
+    'スカイスキン':     'ひこう',
+    'フリーズスキン':   'こおり',
+    'エレキスキン':     'でんき',
+    'ドラゴンスキン':   'ドラゴン',
+  };
+  const skinType = atkAbilityOnCalc ? Object.keys(skinMap).find(k => atkAbilityNameCalc.includes(k)) : null;
+  if(skinType){
+    if(moveType === 'ノーマル'){
+      moveType = skinMap[skinType]; // タイプを変換
+      updateMoveTypeBadge(moveType); // タイプバッジを更新
+    } else {
+      powerRate.atkAbi = 4096; // 条件不一致→補正無効
+    }
+  } else if(atkAbilityOnCalc && atkAbilityNameCalc.includes('ノーマルスキン')){
+    if(moveType !== 'ノーマル'){
+      moveType = 'ノーマル'; // タイプをノーマルに変換
+      updateMoveTypeBadge(moveType); // タイプバッジを更新
+    } else {
+      powerRate.atkAbi = 4096; // 条件不一致→補正無効
+    }
+  } else if(!atkAbilityOnCalc && (Object.keys(skinMap).some(k=>atkAbilityNameCalc.includes(k)) || atkAbilityNameCalc.includes('ノーマルスキン'))){
+    // 特性OFFのとき×1.2を無効化、タイプバッジを元に戻す
+    powerRate.atkAbi = 4096;
+    updateMoveTypeBadge(currentWaza ? currentWaza.t : null);
+  }
+
   // 威力補正（フィールド補正を含む）
   const fieldRate = getFieldRate(moveType);
   const powerRateFinal=Math.round(Math.round(Math.round(powerRate.atkAbi*powerRate.atkItem/4096)*charge/4096)*fieldRate/4096);
-  const powerFinal=fiveRound(power*powerRateFinal/4096);
+  const powerFinal=fiveRound(effectivePower*powerRateFinal/4096);
 
   // 攻撃補正
   const atkRankFinal =Math.floor(atk*rankMul(atkRank));
@@ -2362,36 +2660,35 @@ function calcDmg(){
   const defFinal     = fiveRound(defStom * defRateFinal / 4096);
 
   // ダメージ補正
-  const damageRateFinal=Math.round(Math.round(Math.round(Math.round(wall*damageRate.atkAbi/4096)*damageRate.defAbi/4096)*damageRate.atkItem/4096)*damageRate.defItem/4096);
+  // マルチスケイルはHP満タン（100%）かつ1発目のみ発動
+  // 半減実はHPに関係なく常に発動（ただし複数攻撃は1発目のみ）
+  const isFullHp = hpPctOverride >= 100;
+  // 1発目用：マルチスケイルはHP満タン時のみ、半減実は常に有効
+  const damageRateFinal1 = Math.round(Math.round(Math.round(Math.round(wall*damageRate.atkAbi/4096)*(isFullHp?damageRate.defAbi:4096)/4096)*damageRate.atkItem/4096)*damageRate.defItem/4096);
+  // 2発目以降：マルチスケイル無効、半減実も無効（HPが減っているため）
+  const damageRateFinalN = Math.round(Math.round(Math.round(Math.round(wall*damageRate.atkAbi/4096)*4096/4096)*damageRate.atkItem/4096)*4096/4096);
 
-  // ベースダメージ（レベル50固定）
-  // 晴れ・雨の威力補正はここ（weatherMul）で適用
-  const weatherMul = getWeatherMul(moveType);
-  const base1=Math.floor(22*powerFinal*atkFinal/defFinal);
-  const base2=Math.floor(base1/50)+2;
-  const bond = document.getElementById('mod-bond').checked;
-
-  // base3: 元ツール準拠で bond(×0.25) を乗算するタイミング
-  const base3 = fiveRound(base2 * (bond ? 0.25 : 1));
-  const base4=fiveRound(base3*weatherMul);
-  const baseFinal=fiveRound(base4*crit);
-
-  // 親子愛2発目: bond×0.25 を base2 に乗算（1発目とは別に計算）
-  const base3b = bond ? fiveRound(base2 * 1) : null; // 2発目はbond補正なし（通常ダメージ）
-  // ※親子愛: 1発目×0.25、2発目×1.0（元ツール準拠: base3=base2*0.25が1発目）
-  // 実際には1発目が通常、2発目が×0.25なので修正
-  // 元ツール: bond=0.25を base3=fiveRound(base2*bond) に適用 → これが1発のダメージ
-  // 親子愛の実際の挙動: 通常ダメージ1発 + ×0.25ダメージ1発の2発
-  const baseNormal  = fiveRound(fiveRound(base2*1)*weatherMul*crit);   // 通常1発
-  const baseBond    = fiveRound(fiveRound(fiveRound(base2*0.25)*weatherMul)*crit); // ×0.25の1発
-
-  function applyRates(dmg){
+  // hitNo: 何発目か（1始まり）、1発目のみマルチスケイル等を適用
+  function applyRates(dmg, hitNo=1){
+    const dr = hitNo <= 1 ? damageRateFinal1 : damageRateFinalN;
     let d=fiveRound(dmg*stabVal);
     d=Math.floor(d*typeEff);
     d=fiveRound(d*burn);
-    d=fiveRound(d*damageRateFinal/4096);
+    d=fiveRound(d*dr/4096);
     return Math.max(1,d);
   }
+
+  // ベースダメージ（レベル50固定）
+  const weatherMul = getWeatherMul(moveType);
+  const base1 = Math.floor(22*powerFinal*atkFinal/defFinal);
+  const base2 = Math.floor(base1/50)+2;
+  const bond   = document.getElementById('mod-bond').checked;
+  const base3  = fiveRound(base2*(bond?0.25:1));
+  const base4  = fiveRound(base3*weatherMul);
+  const baseFinal = fiveRound(base4*crit);
+  // 親子愛: 通常1発 + ×0.25の1発
+  const baseNormal = fiveRound(fiveRound(base2*1)*weatherMul*crit);
+  const baseBond   = fiveRound(fiveRound(fiveRound(base2*0.25)*weatherMul)*crit);
 
   // 乱数16通り
   const randList=[0.85,0.86,0.87,0.88,0.89,0.90,0.91,0.92,0.93,0.94,0.95,0.96,0.97,0.98,0.99,1.00];
@@ -2405,13 +2702,14 @@ function calcDmg(){
   if(moveName === 'トリプルアクセル'){
     // 各発の威力でベースダメージを計算
     const triPowers = [20, 40, 60].slice(0, tripleHits);
-    const triDmgsList = triPowers.map(tp => {
-      const tpFinal = fiveRound(tp * powerRateFinal / 4096); // 威力補正を各発に適用
+    const triDmgsList = triPowers.map((tp, hitIdx) => {
+      const tpFinal = fiveRound(tp * powerRateFinal / 4096);
       const tBase1  = Math.floor(22 * tpFinal * atkFinal / defFinal);
       const tBase2  = Math.floor(tBase1 / 50) + 2;
       const tBase3  = fiveRound(tBase2 * weatherMul);
       const tBase4  = fiveRound(tBase3 * crit);
-      return randList.map(r => applyRates(Math.floor(tBase4 * r)));
+      // hitIdx+1: 1発目=1, 2発目=2, 3発目=3
+      return randList.map(r => applyRates(Math.floor(tBase4 * r), hitIdx+1));
     });
 
     // 各乱数インデックスで全発の合計ダメージを計算
@@ -2429,8 +2727,8 @@ function calcDmg(){
 
   } else if(bond){
     // 親子愛: 各乱数で「通常ダメージ + ×0.25ダメージ」を足した16通り
-    const dmgs1 = randList.map(r=>applyRates(Math.floor(baseNormal*r)));  // 1発目
-    const dmgs2 = randList.map(r=>applyRates(Math.floor(baseBond*r)));    // 2発目(×0.25)
+    const dmgs1 = randList.map(r=>applyRates(Math.floor(baseNormal*r), 1));  // 1発目
+    const dmgs2 = randList.map(r=>applyRates(Math.floor(baseBond*r),   2));  // 2発目(×0.25)
     dmgs = dmgs1.map((d,i)=>d+dmgs2[i]);
     const min1=Math.min(...dmgs1),max1=Math.max(...dmgs1);
     const min2=Math.min(...dmgs2),max2=Math.max(...dmgs2);
@@ -2442,13 +2740,13 @@ function calcDmg(){
     resDmg.style.color=maxP>=100?'var(--red)':maxP>=50?'var(--yellow)':'var(--atk)';
     resPct.style.color=maxP>=100?'var(--red)':maxP>=50?'var(--yellow)':'var(--text)';
   } else {
-    const singleDmgs = randList.map(r=>applyRates(Math.floor(baseFinal*r)));
+    const singleDmgs = randList.map(r=>applyRates(Math.floor(baseFinal*r), 1));
     if(multiHits <= 1){
-      // 通常（1発）
       dmgs = singleDmgs;
     } else {
-      // 連続技：同じダメージをmultiHits発分合計
-      dmgs = singleDmgs.map(d => d * multiHits);
+      // 連続技：1発目は発番号1、2発目以降は発番号2以上でマルチスケイル無効
+      const laterDmgs = randList.map(r=>applyRates(Math.floor(baseFinal*r), 2));
+      dmgs = singleDmgs.map((d, i) => d + laterDmgs[i] * (multiHits - 1));
     }
     const minDmg=Math.min(...dmgs), maxDmg=Math.max(...dmgs);
     const minPer=(minDmg/hp*100).toFixed(1), maxPer=(maxDmg/hp*100).toFixed(1);
@@ -2588,10 +2886,20 @@ function updateSummary(){
   const defFn   = defFd && defFd.fn ? `(${defFd.fn})` : '';
   const defStat = defType; // B or D
 
-  // 技名
+  // 技名＋発数サフィックス
   const moveName = document.getElementById('move-inp').value || '—';
+  const isTriple = moveName === 'トリプルアクセル' && tripleHits > 1;
+  const isMulti  = moveName !== 'トリプルアクセル' && multiHits > 1;
+  const hitsSuffix = isTriple ? `(${tripleHits}発)` : isMulti ? `(${multiHits}発)` : '';
 
-  el.textContent = `${atkName}${atkFn} ${atkStat} → ${defName}${defFn} ${defStat}　${moveName}`;
+  // ポケモン名・ステータスを色分けしてHTMLで表示
+  el.innerHTML =
+    `<span style="color:var(--atk);font-weight:700;">${atkName}${atkFn}</span>` +
+    `<span style="color:var(--text2);"> ${atkStat} → </span>` +
+    `<span style="color:var(--def);font-weight:700;">${defName}${defFn}</span>` +
+    `<span style="color:var(--text2);"> ${defStat}</span>` +
+    `<span style="color:var(--text);font-weight:600;">　${moveName}</span>` +
+    (hitsSuffix ? `<span style="color:var(--green);font-weight:700;"> ${hitsSuffix}</span>` : '');
 }
 
 // ============================================================
@@ -2621,39 +2929,45 @@ function clearResult(){
  * key: ポケモン名（フォームキー込み）, value: {ev, nat, rank}
  * 入れ替え時に現在の設定を保存し、移動先に過去の設定があれば復元する
  */
-const pokeSettings = new Map();
 
-function savePokeSettings(side){
-  const poke = side === 'atk' ? atkPoke : defPoke;
-  const fk   = side === 'atk' ? atkFormKey : defFormKey;
-  if(!poke) return;
-  const key = poke.n + '|' + fk + '|' + side;
-  const obj = {
+/** 現在のサイドの全設定をオブジェクトとして読み取る */
+function readSideSettings(side){
+  const isDef = side === 'def';
+  const nat = document.getElementById(side+'-nat-11')?.classList.contains('active') ? 1.1
+            : document.getElementById(side+'-nat-09')?.classList.contains('active') ? 0.9
+            : 1.0;
+  return {
     ev:        parseInt(document.getElementById(side+'-ev').value) || 0,
-    nat:       document.getElementById(side+'-nat').checked,
+    nat,
     rank:      side === 'atk' ? atkRank : defRank,
     ability:   document.getElementById(side+'-ability-sel')?.value || '',
     abilityOn: document.getElementById(side+'-ability-on')?.checked || false,
-    item:      side === 'atk'
-                 ? (document.getElementById('atk-item-sel')?.value || '4096|none')
-                 : (document.getElementById('def-item-sel')?.value || '4096|none'),
+    item:      document.getElementById(side==='atk'?'atk-item-sel':'def-item-sel')?.value || '4096|none',
+    hp:        isDef ? (parseInt(document.getElementById('def-hp').value) || 0) : 0,
+    hpEv:      isDef ? (parseInt(document.getElementById('hp-ev').value)  || 0) : 0,
   };
-  if(side === 'def'){
-    obj.hp   = parseInt(document.getElementById('def-hp').value) || 0;
-    obj.hpEv = parseInt(document.getElementById('hp-ev').value)  || 0;
-  }
-  pokeSettings.set(key, obj);
 }
 
-function loadPokeSettings(side, poke, fk){
-  if(!poke) return;
-  const key = poke.n + '|' + fk + '|' + side;
-  const s = pokeSettings.get(key);
-  const ev   = s ? s.ev   : 0;
-  const nat  = s ? s.nat  : false;
-  const rank = s ? s.rank : 0;
-  document.getElementById(side+'-ev').value    = ev;
-  document.getElementById(side+'-nat').checked = nat;
+/** 設定オブジェクトをサイドに書き込む */
+function writeSideSettings(side, s){
+  if(!s) return;
+  const isDef = side === 'def';
+
+  // EV
+  document.getElementById(side+'-ev').value = s.ev || 0;
+  updateEvTogBtn(side+'-ev');
+
+  // 性格：ボタンのactive状態を直接更新
+  ['09','10','11'].forEach(k => {
+    const el = document.getElementById(side+'-nat-'+k);
+    const v  = k==='09' ? 0.9 : k==='11' ? 1.1 : 1.0;
+    if(el) el.classList.toggle('active', (s.nat||1.0) === v);
+  });
+  const cb = document.getElementById(side+'-nat');
+  if(cb) cb.checked = (s.nat === 1.1);
+
+  // ランク
+  const rank = s.rank || 0;
   if(side === 'atk'){
     atkRank = rank;
     const el = document.getElementById('atk-rank-disp');
@@ -2663,81 +2977,98 @@ function loadPokeSettings(side, poke, fk){
     defRank = rank;
     const el = document.getElementById('def-rank-disp');
     el.textContent = rank > 0 ? '+'+rank : rank;
-    el.style.color = rank > 0 ? 'var(--def)' : rank < 0 ? 'var(--atk)' : 'var(--text)';
-    // HP・HP EVを復元
-    if(s && s.hp){
-      document.getElementById('def-hp').value = s.hp;
-      document.getElementById('hp-ev').value  = s.hpEv || 0;
-    }
+    el.style.color = rank > 0 ? 'var(--atk)' : rank < 0 ? 'var(--def)' : 'var(--text)';
   }
-  // 特性セレクトを復元（updateAbilitySelectでoptionが描画された後に実行）
+
+  // 特性
   const abSel = document.getElementById(side+'-ability-sel');
   const abOn  = document.getElementById(side+'-ability-on');
-  if(abSel && s && s.ability){
+  if(abSel && s.ability){
     const exists = [...abSel.options].some(o => o.value === s.ability);
     if(exists) abSel.value = s.ability;
   }
-  if(abOn && s) abOn.checked = s.abilityOn || false;
+  if(abOn) abOn.checked = s.abilityOn || false;
   updateAbilityDesc(side);
-  // 道具を復元
-  const itemId  = side === 'atk' ? 'atk-item-sel' : 'def-item-sel';
-  const itemSel = document.getElementById(itemId);
-  if(itemSel && s && s.item) itemSel.value = s.item;
+
+  // 道具
+  const itemSel = document.getElementById(side==='atk'?'atk-item-sel':'def-item-sel');
+  if(itemSel && s.item) itemSel.value = s.item;
+
+  // HP・HP EV（防御側のみ）
+  if(isDef){
+    if(s.hp)   document.getElementById('def-hp').value = s.hp;
+    document.getElementById('hp-ev').value = s.hpEv || 0;
+  }
 }
 
-/**
- * 攻撃側と防御側のポケモンを入れ替える
- * EV・性格・ランクはポケモンに紐づけて保存・復元する
- * （攻→防→攻 と戻したとき元の設定が戻る）
- */
-function swapSides(){
-  // 現在のEV・性格・ランクをポケモンに紐づけて保存
-  savePokeSettings('atk');
-  savePokeSettings('def');
+/** サイドの設定をデフォルト値にリセットしてからapplyFdToSideを呼ぶ */
+function resetSide(side, fd){
+  // EV・性格をリセット
+  document.getElementById(side+'-ev').value = '0';
+  updateEvTogBtn(side+'-ev');
+  ['09','10','11'].forEach(k => {
+    const el = document.getElementById(side+'-nat-'+k);
+    if(el) el.classList.toggle('active', k === '10');
+  });
+  const cb = document.getElementById(side+'-nat');
+  if(cb) cb.checked = false;
 
-  // ポケモンオブジェクト・フォームキー・ベース値をスワップ
+  // ランクをリセット
+  if(side === 'atk'){
+    atkRank = 0;
+    const el = document.getElementById('atk-rank-disp');
+    if(el){ el.textContent = '0'; el.style.color = 'var(--text)'; }
+  } else {
+    defRank = 0;
+    const el = document.getElementById('def-rank-disp');
+    if(el){ el.textContent = '0'; el.style.color = 'var(--text)'; }
+    // HP EVをリセット
+    document.getElementById('hp-ev').value = '0';
+    updateEvTogBtn('hp-ev');
+  }
+
+  // 特性ON/OFFをリセット
+  const abOn = document.getElementById(side+'-ability-on');
+  if(abOn) abOn.checked = false;
+
+  // 道具をリセット
+  const itemSel = document.getElementById(side==='atk'?'atk-item-sel':'def-item-sel');
+  if(itemSel) itemSel.value = '4096|none';
+
+  // 実数値を再計算
+  applyFdToSide(side, fd);
+}
+
+function swapSides(){
+  const atkSlot = currentAtkSlot;
+  const defSlot = atkSlot === 'A' ? 'B' : 'A';
+
+  // 入れ替え前の設定を両スロットに保存（スワップ前に必ず読み取る）
+  const currentAtkS = readSideSettings('atk');
+  const currentDefS = readSideSettings('def');
+  slotSettings[atkSlot].atk = currentAtkS;
+  slotSettings[defSlot].def = currentDefS;
+
+  // ポケモンオブジェクト・フォームキーをスワップ
   [atkPoke, defPoke]       = [defPoke, atkPoke];
   [atkFormKey, defFormKey] = [defFormKey, atkFormKey];
   [atkBaseRaw, defBaseRaw] = [defBaseRaw, atkBaseRaw];
+
+  // スロットを入れ替え
+  // 元のdefSlotが新しいatkSlot、元のatkSlotが新しいdefSlot
+  currentAtkSlot = defSlot;
+  const newAtkSlot = defSlot;
+  const newDefSlot = atkSlot;
 
   // ポケモン名入力欄・ラベルをスワップ
   const atkInp = document.getElementById('atk-poke-inp');
   const defInp = document.getElementById('def-poke-inp');
   [atkInp.value, defInp.value] = [defInp.value, atkInp.value];
-  const atkName = document.getElementById('atk-poke-name');
-  const defName = document.getElementById('def-poke-name');
-  [atkName.textContent, defName.textContent] = [defName.textContent, atkName.textContent];
+  const atkNameEl = document.getElementById('atk-poke-name');
+  const defNameEl = document.getElementById('def-poke-name');
+  [atkNameEl.textContent, defNameEl.textContent] = [defNameEl.textContent, atkNameEl.textContent];
 
-  // EV・性格・ランクを復元（保存済みがあれば戻す、なければリセット）
-  loadPokeSettings('atk', atkPoke, atkFormKey);
-  loadPokeSettings('def', defPoke, defFormKey);
-
-  // 実数値を再計算してセット
-  if(atkPoke){
-    const fd = getFormData(atkPoke, atkFormKey);
-    if(fd){
-      const sk  = atkType === 'A' ? 'at' : 'sa';
-      atkBaseRaw = fd[sk];
-      const ev  = clampEv(document.getElementById('atk-ev').value);
-      const nat = getAtkNat();
-      document.getElementById('atk-val').value = statCalc(fd[sk], ev, nat, false);
-    }
-  }
-  if(defPoke){
-    const fd = getFormData(defPoke, defFormKey);
-    if(fd){
-      const sk  = defType === 'B' ? 'df' : 'sd';
-      defBaseRaw = fd[sk];
-      const ev  = clampEv(document.getElementById('def-ev').value);
-      const nat = getDefNat();
-      document.getElementById('def-val').value = statCalc(fd[sk], ev, nat, false);
-      hpBaseRaw = fd.hp;
-      const evH = clampEv(document.getElementById('hp-ev').value);
-      document.getElementById('def-hp').value  = statCalc(fd.hp, evH, 1.0, true);
-    }
-  }
-
-  // 種族値・フォームチップ・プレビュー・タイプバッジを再描画
+  // 種族値・フォームチップ・タイプバッジを再描画
   const newAtkFd = atkPoke ? getFormData(atkPoke, atkFormKey) : null;
   const newDefFd = defPoke ? getFormData(defPoke, defFormKey) : null;
   renderBaseStats('atk', newAtkFd);
@@ -2746,16 +3077,45 @@ function swapSides(){
   updatePokeTypeBadges('def', newDefFd);
   renderFormChips('atk', atkPoke);
   renderFormChips('def', defPoke);
-  updateStatPreview('atk');
-  updateStatPreview('def');
-  // 特性セレクトを再描画（loadPokeSettingsより先に実行してoptionを用意する）
+
+  // 特性セレクトのoptionを先に再描画
   updateAbilitySelect('atk', newAtkFd);
   updateAbilitySelect('def', newDefFd);
 
+  // スロットから設定を復元
+  // nullの場合（初回入れ替え）はresetSideでデフォルト値にリセット
+  if(slotSettings[newAtkSlot].atk){
+    writeSideSettings('atk', slotSettings[newAtkSlot].atk);
+  } else {
+    resetSide('atk', newAtkFd);
+  }
+  if(slotSettings[newDefSlot].def){
+    writeSideSettings('def', slotSettings[newDefSlot].def);
+  } else {
+    resetSide('def', newDefFd);
+  }
+
+  // 実数値を再計算
+  if(atkPoke && newAtkFd){
+    const sk = atkType === 'A' ? 'at' : 'sa';
+    atkBaseRaw = newAtkFd[sk];
+    document.getElementById('atk-val').value = statCalc(newAtkFd[sk], clampEv(document.getElementById('atk-ev').value), getAtkNat(), false);
+  }
+  if(defPoke && newDefFd){
+    const sk = defType === 'B' ? 'df' : 'sd';
+    defBaseRaw = newDefFd[sk];
+    hpBaseRaw  = newDefFd.hp;
+    document.getElementById('def-val').value = statCalc(newDefFd[sk], clampEv(document.getElementById('def-ev').value), getDefNat(), false);
+    document.getElementById('def-hp').value  = statCalc(newDefFd.hp, clampEv(document.getElementById('hp-ev').value), 1.0, true);
+  }
+
+  updateStatPreview('atk');
+  updateStatPreview('def');
+  ['atk-ev','hp-ev','def-ev'].forEach(id => updateEvTogBtn(id));
+
   // 技の分類に合わせてA/C・B/Dを自動設定
   const swapWaza = (typeof WD !== 'undefined')
-    ? WD.find(w => w.n === document.getElementById('move-inp').value)
-    : null;
+    ? WD.find(w => w.n === document.getElementById('move-inp').value) : null;
   if(swapWaza){
     if(swapWaza.c === 'ぶつり'){  setAtkType('A'); setDefType('B'); }
     else if(swapWaza.c === 'とくしゅ'){ setAtkType('C'); setDefType('D'); }
@@ -2763,32 +3123,18 @@ function swapSides(){
 
   autoTypeCalc();
 
-  // EVトグルボタンの表示を更新
-  ['atk-ev','hp-ev','def-ev'].forEach(id => updateEvTogBtn(id));
-
   // イカサマ・ボディプレスの参照を再適用
   const curMoveName = document.getElementById('move-inp').value;
-  if(curMoveName === 'ボディプレス' && atkPoke){
-    const fd = getFormData(atkPoke, atkFormKey);
-    if(fd){
-      atkBaseRaw = fd.df;
-      const ev = clampEv(document.getElementById('atk-ev').value);
-      const nat = getAtkNat();
-      document.getElementById('atk-val').value = statCalc(fd.df, ev, nat, false);
-    }
-  } else if(curMoveName === 'イカサマ' && defPoke){
-    const defFd = getFormData(defPoke, defFormKey);
-    if(defFd){
-      atkBaseRaw = defFd.at;
-      const ev = clampEv(document.getElementById('atk-ev').value);
-      const nat = getAtkNat();
-      document.getElementById('atk-val').value = statCalc(defFd.at, ev, nat, false);
-    }
+  if(curMoveName === 'ボディプレス' && atkPoke && newAtkFd){
+    atkBaseRaw = newAtkFd.df;
+    document.getElementById('atk-val').value = statCalc(newAtkFd.df, clampEv(document.getElementById('atk-ev').value), getAtkNat(), false);
+  } else if(curMoveName === 'イカサマ' && defPoke && newDefFd){
+    atkBaseRaw = newDefFd[atkType === 'A' ? 'at' : 'sa'];
   }
-  updateAtkStatRefLabel(curMoveName);
 
   calcDmg();
 }
+
 function toggleCrit(){
   const cb  = document.getElementById('mod-crit');
   const btn = document.getElementById('crit-btn');
@@ -2805,7 +3151,7 @@ function resetAll(){
   atkRank=defRank=0;
   ['atk-poke-inp','def-poke-inp','move-inp'].forEach(id=>document.getElementById(id).value='');
   ['atk-val','def-val','def-hp','move-power'].forEach(id=>document.getElementById(id).value='');
-  ['atk-ev','def-ev','hp-ev'].forEach(id=>document.getElementById(id).value='0');
+  ['atk-ev','def-ev','hp-ev'].forEach(id=>{ document.getElementById(id).value='0'; updateEvTogBtn(id); });
   ['mod-crit','mod-burn','mod-wall','mod-charge','mod-bond'].forEach(id=>document.getElementById(id).checked=false);
   ['atk-nat','def-nat'].forEach(id=>{ const el=document.getElementById(id); if(el) el.checked=false; });
   // 性格ボタンを1.0にリセット
@@ -2847,7 +3193,13 @@ function resetAll(){
     if(desc) desc.textContent = '';
   });
   clearResult();
-  // トリプルアクセル・連続技発数をリセット
+  // スロット設定・特性記憶をリセット
+  slotSettings.A.atk = slotSettings.A.def = null;
+  slotSettings.B.atk = slotSettings.B.def = null;
+  currentAtkSlot = 'A';
+  abilityMemory.clear();
+  // 特性モードを固有に戻す
+  ['atk','def'].forEach(s => setAbilityMode(s, 'native'));
   tripleHits = 1; multiHits = 1;
   const triWrap = document.getElementById('triple-hits');
   if(triWrap) triWrap.classList.remove('show');
