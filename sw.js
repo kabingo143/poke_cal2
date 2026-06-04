@@ -9,7 +9,7 @@ const FILES = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
-  '/pokemon_ng.js'
+  './pokemon_ng.js'
 ];
 
 // インストール時：全ファイルをキャッシュ
