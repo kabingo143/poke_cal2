@@ -461,8 +461,6 @@ body {
 /* 特性ラベル + select を横並び */
 .ab-row {
   display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
-  /* 行全体を親幅に収める */
-  overflow: hidden;
 }
 .ab-row:last-child { margin-bottom: 0; }
 .ab-lbl { font-size: 11px; color: var(--text2); white-space: nowrap; min-width: 28px; }
@@ -473,10 +471,6 @@ body {
 }
 .ab-sel {
   flex: 1;
-  /* はみ出し防止：flex子要素のmin-width:0でshrink可能にする */
-  min-width: 0;
-  /* テキストが長くても省略表示 */
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   background: var(--inp-bg); border: 1px solid var(--inp-bdr);
   border-radius: var(--radius-sm); color: var(--text);
   font-size: 12px; padding: 7px 6px; outline: none;
@@ -1762,7 +1756,9 @@ function acSearch(side, q){
   if(!hits.length){ drop.classList.remove('show'); return; }
   const html = hits.map((n,i)=>
     `<div class="ac-item" data-name="${n}" data-idx="${i}"
-      onmousedown="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}')">
+      onmousedown="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}')"
+      ontouchstart="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}')">
+
       ${n}</div>`
   ).join('');
   showDrop(drop, document.getElementById(side+'-poke-inp'), html);
@@ -1840,7 +1836,8 @@ function wazaSearch(q){
       : '';
     return `<div class="ac-item" data-power="${w.p}" data-cat="${w.c||''}" data-name="${w.n.replace(/"/g,'&quot;')}" data-idx="${i}"
       style="display:flex;gap:6px;align-items:center;justify-content:space-between;"
-      onmousedown="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')">
+      onmousedown="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')"
+      ontouchstart="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')">
       <span style="flex:1;">${w.n}</span>
       <span style="display:flex;gap:3px;">${badges}</span>
       <span style="color:var(--yellow);font-size:11px;min-width:24px;text-align:right;">${w.p ?? '可変'}</span>
