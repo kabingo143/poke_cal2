@@ -1,5 +1,5 @@
 // キャッシュ名（バージョン管理用）
-const CACHE = 'poke-dmg-v3';
+const CACHE = 'poke-dmg-v4';
 
 // キャッシュするファイル一覧
 const FILES = [
