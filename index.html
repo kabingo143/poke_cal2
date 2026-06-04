@@ -461,6 +461,8 @@ body {
 /* 特性ラベル + select を横並び */
 .ab-row {
   display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+  /* 行全体を親幅に収める */
+  overflow: hidden;
 }
 .ab-row:last-child { margin-bottom: 0; }
 .ab-lbl { font-size: 11px; color: var(--text2); white-space: nowrap; min-width: 28px; }
@@ -471,6 +473,10 @@ body {
 }
 .ab-sel {
   flex: 1;
+  /* はみ出し防止：flex子要素のmin-width:0でshrink可能にする */
+  min-width: 0;
+  /* テキストが長くても省略表示 */
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   background: var(--inp-bg); border: 1px solid var(--inp-bdr);
   border-radius: var(--radius-sm); color: var(--text);
   font-size: 12px; padding: 7px 6px; outline: none;
@@ -837,7 +843,7 @@ body {
           <optgroup label="威力補正">
             <option value="4505|power">×1.09 (ちからのハチマキ)</option>
             <option value="4506|power">×1.1（パンチグローブ）</option>
-            <option value="4915|power">×1.2（おめん,タイプ強化）</option>
+            <option value="4915|power">×1.2（おめん､タイプ強化）</option>
             <option value="5325|power">×1.3（ジュエル）</option>
           </optgroup>
           <optgroup label="攻撃補正">
@@ -1030,7 +1036,7 @@ body {
       <div class="stab-btn-grp">
         <button class="stab-btn" id="stab-none" onclick="setStab(1.0)">なし</button>
         <button class="stab-btn active" id="stab-normal" onclick="setStab(1.5)">×1.5</button>
-        <button class="stab-btn" id="stab-tera" onclick="setStab(2.0)">×2.0</button>
+        <button class="stab-btn" id="stab-tera" onclick="setStab(2.0)">テラス×2.0</button>
       </div>
     </div>
 
@@ -1571,9 +1577,9 @@ function updateAbilitySelect(side, fd){
     if(name === 'そうだいしょう'){
       // そうだいしょうは0〜3体の4択で追加
       [['そうだいしょう0','そうだいしょう（0体）'],
-      ['そうだいしょう1','そうだいしょう（1体）×1.1'],
-      ['そうだいしょう2','そうだいしょう（2体）×1.2'],
-      ['そうだいしょう3','そうだいしょう（3体）×1.3'],
+       ['そうだいしょう1','そうだいしょう（1体）×1.1'],
+       ['そうだいしょう2','そうだいしょう（2体）×1.2'],
+       ['そうだいしょう3','そうだいしょう（3体）×1.3'],
       ].forEach(([val, label]) => {
         const opt = document.createElement('option');
         opt.value = val; opt.textContent = label;
@@ -2131,30 +2137,10 @@ function onEvInput(side){
   updateStatPreview(side); calcDmg();
 }
 
-// 特性モード（固有/汎用）
-const abilityMode = { atk: 'native', def: 'native' };
-
-// 汎用特性リスト（攻撃側・防御側共通で選べる特性）
-const GENERAL_ABILITIES_ATK = [
-  '',
-  'そうだいしょう1', 'そうだいしょう2', 'そうだいしょう3',
-  'すてみ', 'てつのこぶし', 'パンクロック',
-  'エレキスキン', 'フェアリースキン', 'スカイスキン', 'フリーズスキン', 'ドラゴンスキン', 'ノーマルスキン',
-  'ちからずく', 'すなのちから', 'アナライズ', 'かたいツメ',
-  'はりきり', 'ふしぎなまもり', 'いろめがね',
-  'へんげんじざい',
-];
-const GENERAL_ABILITIES_DEF = [
-  '',
-  'マルチスケイル', 'ファントムガード',
-  'もふもふ', 'ハードロック', 'フィルター', 'プリズムアーマー',
-  'ふしぎなまもり', 'いろめがね',
-  'パンクロック',
-];
+// 特性モード（固有/汎用）の切り替え状態はUIのactiveクラスで管理
 
 /** 固有/汎用モードを切り替えてセレクトを更新 */
 function setAbilityMode(side, mode){
-  abilityMode[side] = mode;
   // ボタンのactive切替
   document.getElementById(side+'-ab-mode-native').classList.toggle('active', mode === 'native');
   document.getElementById(side+'-ab-mode-general').classList.toggle('active', mode === 'general');
@@ -2339,9 +2325,9 @@ function autoTypeCalc(){
     ? weatherBallTypeMap[weather]
     : waza.t;
 
-  // スキン系タイプ変換・へんげんじざい判定（特性ONのときのみ）
-  const atkAbilityNameAuto = document.getElementById('atk-ability-sel')?.selectedOptions[0]?.text || '';
-  const atkAbilityOnAuto   = document.getElementById('atk-ability-on')?.checked || false;
+  // スキン系タイプ変換・へんげんじざい判定（特性ONのときのみ・valueで判定）
+  const atkAbilityValAuto = document.getElementById('atk-ability-sel')?.value || '';
+  const atkAbilityOnAuto  = document.getElementById('atk-ability-on')?.checked || false;
   const skinMapAuto = {
     'フェアリースキン': 'フェアリー',
     'スカイスキン':     'ひこう',
@@ -2350,19 +2336,18 @@ function autoTypeCalc(){
     'ドラゴンスキン':   'ドラゴン',
   };
   if(atkAbilityOnAuto){
-    const skinTypeAuto = Object.keys(skinMapAuto).find(k => atkAbilityNameAuto.includes(k));
+    const skinTypeAuto = Object.keys(skinMapAuto).find(k => atkAbilityValAuto === k);
     if(skinTypeAuto && moveType === 'ノーマル'){
       moveType = skinMapAuto[skinTypeAuto];
-    } else if(atkAbilityNameAuto.includes('ノーマルスキン') && moveType !== 'ノーマル'){
+    } else if(atkAbilityValAuto === 'ノーマルスキン' && moveType !== 'ノーマル'){
       moveType = 'ノーマル';
     }
   }
 
-  // ===== STAB 自動判定 =====
   // へんげんじざい特性はすべての技でタイプ一致（×1.5）、特性ONのときのみ
-  const atkAbilityName = document.getElementById('atk-ability-sel')?.selectedOptions[0]?.text || '';
+  const atkAbilityName = document.getElementById('atk-ability-sel')?.value || '';
   const atkAbilityOn   = document.getElementById('atk-ability-on')?.checked || false;
-  const isHengen = atkAbilityOn && atkAbilityName.includes('へんげんじざい');
+  const isHengen = atkAbilityOn && atkAbilityName === 'へんげんじざい';
   if(isHengen){
     if(stabVal !== 2.0) setStab(1.5); // テラス状態は維持
   } else if(atkPoke){
@@ -2609,9 +2594,8 @@ function calcDmg(){
   const damageRate = rateSelected("damage");
 
   // スキン系特性：ノーマル技を別タイプに変換し×1.2
-  // ノーマルスキン：ノーマル以外の技をノーマルに変換し×1.2
-  // 条件に合わない場合・特性OFFの場合はpowerRate.atkAbiを4096（無効）に戻す
-  const atkAbilityNameCalc = document.getElementById('atk-ability-sel')?.selectedOptions[0]?.text || '';
+  // スキン系・ノーマルスキン・へんげんじざい判定（特性ONのときのみ・valueで判定）
+  const atkAbilityValCalc  = document.getElementById('atk-ability-sel')?.value || '';
   const atkAbilityOnCalc   = document.getElementById('atk-ability-on')?.checked || false;
   const skinMap = {
     'フェアリースキン': 'フェアリー',
@@ -2620,23 +2604,22 @@ function calcDmg(){
     'エレキスキン':     'でんき',
     'ドラゴンスキン':   'ドラゴン',
   };
-  const skinType = atkAbilityOnCalc ? Object.keys(skinMap).find(k => atkAbilityNameCalc.includes(k)) : null;
+  const skinType = atkAbilityOnCalc ? Object.keys(skinMap).find(k => atkAbilityValCalc === k) : null;
   if(skinType){
     if(moveType === 'ノーマル'){
-      moveType = skinMap[skinType]; // タイプを変換
-      updateMoveTypeBadge(moveType); // タイプバッジを更新
+      moveType = skinMap[skinType];
+      updateMoveTypeBadge(moveType);
     } else {
-      powerRate.atkAbi = 4096; // 条件不一致→補正無効
+      powerRate.atkAbi = 4096;
     }
-  } else if(atkAbilityOnCalc && atkAbilityNameCalc.includes('ノーマルスキン')){
+  } else if(atkAbilityOnCalc && atkAbilityValCalc === 'ノーマルスキン'){
     if(moveType !== 'ノーマル'){
-      moveType = 'ノーマル'; // タイプをノーマルに変換
-      updateMoveTypeBadge(moveType); // タイプバッジを更新
+      moveType = 'ノーマル';
+      updateMoveTypeBadge(moveType);
     } else {
-      powerRate.atkAbi = 4096; // 条件不一致→補正無効
+      powerRate.atkAbi = 4096;
     }
-  } else if(!atkAbilityOnCalc && (Object.keys(skinMap).some(k=>atkAbilityNameCalc.includes(k)) || atkAbilityNameCalc.includes('ノーマルスキン'))){
-    // 特性OFFのとき×1.2を無効化、タイプバッジを元に戻す
+  } else if(!atkAbilityOnCalc && (Object.keys(skinMap).includes(atkAbilityValCalc) || atkAbilityValCalc === 'ノーマルスキン')){
     powerRate.atkAbi = 4096;
     updateMoveTypeBadge(currentWaza ? currentWaza.t : null);
   }
