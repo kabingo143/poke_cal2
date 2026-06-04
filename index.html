@@ -199,6 +199,11 @@ body {
   font-size: 13px;
   color: #c0d8f0;
   border-bottom: 1px solid #1e2d40;
+  /* 技名・属性バッジ・威力を横並びにする */
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
 }
 .ac-item:last-child { border-bottom: none; }
 .ac-item:hover, .ac-item.active { background: #2a4060; color: #7ab8ff; }
@@ -1756,9 +1761,7 @@ function acSearch(side, q){
   if(!hits.length){ drop.classList.remove('show'); return; }
   const html = hits.map((n,i)=>
     `<div class="ac-item" data-name="${n}" data-idx="${i}"
-      onmousedown="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}')"
-      ontouchstart="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}')">
-
+      onmousedown="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}')">
       ${n}</div>`
   ).join('');
   showDrop(drop, document.getElementById(side+'-poke-inp'), html);
@@ -1835,7 +1838,6 @@ function wazaSearch(q){
       ? w.a.map(a=>`<span style="font-size:9px;color:var(--green);border:1px solid var(--green);border-radius:3px;padding:0 3px;line-height:1.6;">${a}</span>`).join('')
       : '';
     return `<div class="ac-item" data-power="${w.p}" data-cat="${w.c||''}" data-name="${w.n.replace(/"/g,'&quot;')}" data-idx="${i}"
-      style="display:flex;gap:6px;align-items:center;justify-content:space-between;"
       onmousedown="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')"
       ontouchstart="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')">
       <span style="flex:1;">${w.n}</span>
