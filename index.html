@@ -199,11 +199,6 @@ body {
   font-size: 13px;
   color: #c0d8f0;
   border-bottom: 1px solid #1e2d40;
-  /* 技名・属性バッジ・威力を横並びにする */
-  display: flex;
-  gap: 6px;
-  align-items: center;
-  justify-content: space-between;
 }
 .ac-item:last-child { border-bottom: none; }
 .ac-item:hover, .ac-item.active { background: #2a4060; color: #7ab8ff; }
@@ -1832,14 +1827,34 @@ function wazaSearch(q){
   if(!q){ drop.classList.remove('show'); return; }
   const hits = searchWaza(q);
   if(!hits.length){ drop.classList.remove('show'); return; }
+
+  // ===== デバッグパネル（原因調査用・後で削除） =====
+  const dbg = document.getElementById('dbg-panel') || (() => {
+    const d = document.createElement('div');
+    d.id = 'dbg-panel';
+    d.style = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font-size:11px;padding:6px;z-index:99999;word-break:break-all;';
+    document.body.appendChild(d);
+    return d;
+  })();
+  const w0 = hits[0];
+  dbg.innerHTML = `
+    WD定義: ${typeof WD !== 'undefined' ? '✅' : '❌'}<br>
+    技数: ${typeof WD !== 'undefined' ? WD.length : '-'}<br>
+    先頭ヒット: ${w0.n}<br>
+    aフィールド: ${JSON.stringify(w0.a)}<br>
+    badges生成: ${(w0.a && w0.a.length) ? w0.a.join(',') : 'なし'}
+    <button onclick="document.getElementById('dbg-panel').remove()" style="margin-left:8px;color:red;">✕</button>
+  `;
+  // ===== デバッグパネルここまで =====
+
   const html = hits.map((w,i)=>{
     // 属性バッジ（waza.jsにa:["切","拳"]等があれば表示）
     const badges = (w.a && w.a.length)
       ? w.a.map(a=>`<span style="font-size:9px;color:var(--green);border:1px solid var(--green);border-radius:3px;padding:0 3px;line-height:1.6;">${a}</span>`).join('')
       : '';
     return `<div class="ac-item" data-power="${w.p}" data-cat="${w.c||''}" data-name="${w.n.replace(/"/g,'&quot;')}" data-idx="${i}"
-      onmousedown="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')"
-      ontouchstart="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')">
+      style="display:flex;gap:6px;align-items:center;justify-content:space-between;"
+      onmousedown="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')">
       <span style="flex:1;">${w.n}</span>
       <span style="display:flex;gap:3px;">${badges}</span>
       <span style="color:var(--yellow);font-size:11px;min-width:24px;text-align:right;">${w.p ?? '可変'}</span>
