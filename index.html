@@ -199,6 +199,11 @@ body {
   font-size: 13px;
   color: #c0d8f0;
   border-bottom: 1px solid #1e2d40;
+  /* 技名・属性バッジ・威力を横並び（スマホでも確実に効くようCSS側で定義） */
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  justify-content: space-between;
 }
 .ac-item:last-child { border-bottom: none; }
 .ac-item:hover, .ac-item.active { background: #2a4060; color: #7ab8ff; }
@@ -461,6 +466,8 @@ body {
 /* 特性ラベル + select を横並び */
 .ab-row {
   display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+  /* 行全体を親幅に収める */
+  overflow: hidden;
 }
 .ab-row:last-child { margin-bottom: 0; }
 .ab-lbl { font-size: 11px; color: var(--text2); white-space: nowrap; min-width: 28px; }
@@ -471,6 +478,10 @@ body {
 }
 .ab-sel {
   flex: 1;
+  /* flexbox内で正しく縮小できるようmin-width:0を指定 */
+  min-width: 0;
+  /* 長いテキストを省略表示 */
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
   background: var(--inp-bg); border: 1px solid var(--inp-bdr);
   border-radius: var(--radius-sm); color: var(--text);
   font-size: 12px; padding: 7px 6px; outline: none;
@@ -1030,7 +1041,8 @@ body {
       <div class="stab-btn-grp">
         <button class="stab-btn" id="stab-none" onclick="setStab(1.0)">なし</button>
         <button class="stab-btn active" id="stab-normal" onclick="setStab(1.5)">×1.5</button>
-        <button class="stab-btn" id="stab-tera" onclick="setStab(2.0)">テラス×2.0</button>
+        <button class="stab-btn" id="stab-tera" onclick="setStab(2.0)">×2</button>
+        <button class="stab-btn" id="stab-tera2" onclick="setStab(2.25)">×2.25</button>
       </div>
     </div>
 
@@ -1273,30 +1285,30 @@ const ABILITY_MAP = {
   'そうだいしょう1': {side:'atk', type:'power', val:4506}, // 1体（×1.1）
   'そうだいしょう2': {side:'atk', type:'power', val:4915}, // 2体（×1.2）
   'そうだいしょう3': {side:'atk', type:'power', val:5325}, // 3体（×1.3）
-  'すてみ':         {side:'atk', type:'power', val:4915},
+  'すてみ':         {side:'atk', type:'power', val:4915, attr:'反'},  // 属性「反」の技のみ補正
   'エレキスキン':   {side:'atk', type:'power', val:4915},
   'フェアリースキン':{side:'atk', type:'power', val:4915},
   'スカイスキン':   {side:'atk', type:'power', val:4915},
   'フリーズスキン': {side:'atk', type:'power', val:4915},
   'ドラゴンスキン': {side:'atk', type:'power', val:4915},
   'ノーマルスキン': {side:'atk', type:'power', val:4915},
-  'てつのこぶし':   {side:'atk', type:'power', val:4915},
+  'てつのこぶし':   {side:'atk', type:'power', val:4915, attr:'拳'},  // 属性「拳」の技のみ補正
   'ちからずく':     {side:'atk', type:'power', val:5325},
-  'すなのちから':   {side:'atk', type:'power', val:5325},
+  'すなのちから':   {side:'atk', type:'power', val:5325, moveTypes:['じめん','いわ','はがね']},  // じめん・いわ・はがね技のみ補正
   'アナライズ':     {side:'atk', type:'power', val:5325},
-  'かたいツメ':     {side:'atk', type:'power', val:5325},
+  'かたいツメ':     {side:'atk', type:'power', val:5325, attr:'接'},  // 属性「接」の技のみ補正
   'パンクロック':   {side:'both',atkType:'power',atkVal:5325, defType:'damage',defVal:2048},
-  'フェアリーオーラ':{side:'atk',type:'power', val:5448},
-  'ダークオーラ':   {side:'atk', type:'power', val:5448},
-  'きれあじ':       {side:'atk', type:'power', val:6144},
+  'フェアリーオーラ':{side:'both', type:'power', val:5448, moveType:'フェアリー'}, // 攻守どちらでも威力補正
+  'ダークオーラ':   {side:'both', type:'power', val:5448, moveType:'あく'},  // 攻守どちらでも威力補正
+  'きれあじ':       {side:'atk', type:'power', val:6144, attr:'切'},  // 属性「切」の技のみ補正
   'テクニシャン':   {side:'atk', type:'power', val:6144},
   'ねつぼうそう':   {side:'atk', type:'power', val:6144},
   'どくぼうそう':   {side:'atk', type:'power', val:6144},
-  'かんじょうあご': {side:'atk', type:'power', val:6144},
-  'メガランチャー': {side:'atk', type:'power', val:6144},
+  'がんじょうあご': {side:'atk', type:'power', val:6144, attr:'噛'},  // 属性「噛」の技のみ補正
+  'メガランチャー': {side:'atk', type:'power', val:6144, attr:'波'},  // 属性「波」の技のみ補正
   'クォークチャージ':{side:'both',atkType:'atk',atkVal:5325, defType:'def',defVal:5325},
   'こだいかっせい': {side:'both',atkType:'atk',atkVal:5325, defType:'def',defVal:5325},
-  'トランジスタ':   {side:'atk', type:'atk',   val:5325},
+  'トランジスタ':   {side:'atk', type:'atk',   val:5325, moveType:'でんき'},  // でんき技のみ補正
   'ハドロンエンジン':{side:'both',atkType:'atk',atkVal:5461, defType:'atk',defVal:5461},
   'ひひいろのこどう':{side:'atk', type:'atk',   val:5461},
   'こんじょう':     {side:'atk', type:'atk',   val:6144},
@@ -1306,7 +1318,7 @@ const ABILITY_MAP = {
   'むしのしらせ':   {side:'atk', type:'atk',   val:6144},
   'もらいび':       {side:'atk', type:'atk',   val:6144},
   'サンパワー':     {side:'atk', type:'atk',   val:6144},
-  'いわはこび':     {side:'atk', type:'atk',   val:6144},
+  'いわはこび':     {side:'atk', type:'atk',   val:6144, moveType:'いわ'},  // いわ技のみ補正
   'ちからもち':     {side:'atk', type:'atk',   val:8192},
   'ヨガパワー':     {side:'atk', type:'atk',   val:8192},
   'すいほう':       {side:'both', special:'suihou'},
@@ -1315,16 +1327,21 @@ const ABILITY_MAP = {
   'わざわいのおふだ':{side:'def', type:'atk',  val:3072}, // 相手のA×0.75（防御側が持つ）
   'わざわいのうつわ':{side:'def', type:'atk',  val:3072}, // 相手のC×0.75（防御側が持つ）
   'スナイパー':     {side:'atk', type:'damage', val:6144},
-  'いろめがね':     {side:'atk', type:'damage', val:8192},
-  'あついしぼう':   {side:'def', type:'atk',   val:2048},
+  'いろめがね':     {side:'atk', type:'damage', val:8192, special:'iromegane'},  // こうかいまひとつ以下のとき
+  'あついしぼう':   {side:'def', type:'atk',   val:2048, moveTypes:['こおり','ほのお']},  // こおり・ほのお技のとき
   'たいねつ':       {side:'def', type:'atk',   val:2048},
-  'きよめのしお':   {side:'def', type:'atk',   val:2048},
+  'きよめのしお':   {side:'def', type:'atk',   val:2048, moveType:'ゴースト'},  // ゴースト技のとき
   'ファーコート':   {side:'def', type:'def',   val:8192},
   'マルチスケイル': {side:'def', type:'damage', val:2048},
-  'もふもふ':       {side:'def', type:'damage', val:2048},
+  'もふもふ':       {side:'def', type:'damage', val:2048, attr:'接'},  // 属性「接」の技のとき
   'こおりのりんぷん':{side:'def', type:'damage', val:2048},
-  'ハードロック':   {side:'def', type:'damage', val:3072},
-  'フィルター':     {side:'def', type:'damage', val:3072},
+  'ハードロック':   {side:'def', type:'damage', val:3072, special:'filter'},  // こうかばつぐん以上のとき
+  'フィルター':     {side:'def', type:'damage', val:3072, special:'filter'},  // フィルターと同効果
+  'プリズムアーマー':{side:'def', type:'damage', val:3072, special:'filter'},  // フィルターと同効果
+  'きもったま':     {side:'atk', special:'kimottama'},  // ゴースト無効解除
+  'しんがん':       {side:'atk', special:'kimottama'},  // きもったまと同仕様
+  'リベロ':         {side:'atk', special:'libero'},     // へんげんじざいと同仕様
+  'りゅうのあぎと': {side:'atk', type:'power', val:6144, moveType:'ドラゴン'},  // ドラゴン技のみ威力×1.5
 };
 
 /** 特性の補正説明テキストを生成 */
@@ -1333,8 +1350,18 @@ function abilityDesc(info, side){
   if(info.special === 'suihou'){
     return side==='atk' ? 'みず技×2 攻撃' : 'ほのお技×0.5 ダメージ';
   }
+  if(info.special === 'kimottama') return 'ゴースト無効解除';
+  if(info.special === 'libero')    return 'タイプ一致×1.5';
+  if(info.special === 'iromegane') return 'こうかいまひとつ→威力×2';
+  if(info.special === 'filter')    return 'こうかばつぐん→ダメージ×0.75';
   const typeLabel = {power:'威力',atk:'攻撃',def:'防御',damage:'ダメージ'};
   if(info.side === 'both'){
+    // type/valを持つ場合（オーラ系など）
+    if(info.type){
+      const mul = info.val/4096;
+      return typeLabel[info.type]+' ×'+parseFloat(mul.toFixed(3));
+    }
+    // atkType/defTypeを持つ場合（パンクロックなど）
     const t = side==='atk' ? info.atkType : info.defType;
     const v = side==='atk' ? info.atkVal  : info.defVal;
     if(!t) return '';
@@ -1368,6 +1395,29 @@ function getAbilityRate(side, type, moveType){
   // side チェック: 'atk'のみの特性が防御側に置かれた場合は補正なし（逆も同様）
   if(info.side !== 'both' && info.side !== side) return 4096;
 
+  // きもったま・しんがん: タイプ相性の補正はcalcDmg側で処理
+  if(info.special === 'kimottama') return 4096;
+  // リベロ: STAB補正はautoTypeCalc側で処理
+  if(info.special === 'libero') return 4096;
+  // いろめがね: こうかいまひとつ以下（×0.5以下）のときのみ×2
+  if(info.special === 'iromegane') return typeEff <= 0.5 ? info.val : 4096;
+  // フィルター系: こうかばつぐん以上（×2以上）のときのみ×0.75
+  if(info.special === 'filter') return typeEff >= 2 ? info.val : 4096;
+
+  // 属性チェック: attrフィールドがある特性は技の属性が一致しないと補正なし
+  if(info.attr){
+    const moveInp = document.getElementById('move-inp');
+    const wazaName = moveInp ? moveInp.value : '';
+    const waza = (typeof WD !== 'undefined') ? WD.find(w => w.n === wazaName) : null;
+    const moveAttrs = waza ? (waza.a || []) : [];
+    if(!moveAttrs.includes(info.attr)) return 4096;
+  }
+
+  // 技タイプチェック（単一）
+  if(info.moveType && moveType !== info.moveType) return 4096;
+  // 技タイプチェック（複数）
+  if(info.moveTypes && !info.moveTypes.includes(moveType)) return 4096;
+
   // すいほう: 技タイプで効果が変わる
   if(info.special === 'suihou'){
     if(side==='atk' && type==='atk' && moveType==='みず') return 8192;
@@ -1377,6 +1427,9 @@ function getAbilityRate(side, type, moveType){
 
   // both: サイドに応じて補正種別・値を切替
   if(info.side === 'both'){
+    // type/valを持つ場合（オーラ系など攻守同一補正）はそのまま使用
+    if(info.type) return (info.type === type) ? info.val : 4096;
+    // atkType/defTypeを持つ場合（パンクロックなど攻守別補正）
     const t = side==='atk' ? info.atkType : info.defType;
     const v = side==='atk' ? info.atkVal  : info.defVal;
     return (t === type) ? v : 4096;
@@ -1394,10 +1447,32 @@ function rateSelected(type){
     const w = WD.find(w=>w.n===document.getElementById('move-inp').value);
     return w ? w.t : null;
   })();
+
+  // オーラ特性（ダークオーラ・フェアリーオーラ）の重複防止
+  // 攻守どちらかがオーラ持ちならatkAbiに補正を乗せ、defAbiは等倍(4096)にする
+  const AURA_ABILITIES = ['ダークオーラ', 'フェアリーオーラ'];
+  function getAuraAbi(t){
+    if(t !== 'power') return { atk: getAbilityRate('atk', t, moveType), def: getAbilityRate('def', t, moveType) };
+    const atkAbiName = document.getElementById('atk-ability-sel')?.value || '';
+    const atkOn  = document.getElementById('atk-ability-on')?.checked || false;
+    const defAbiName = document.getElementById('def-ability-sel')?.value || '';
+    const defOn  = document.getElementById('def-ability-on')?.checked || false;
+    const atkIsAura = atkOn && AURA_ABILITIES.includes(atkAbiName);
+    const defIsAura = defOn && AURA_ABILITIES.includes(defAbiName);
+    if((atkIsAura && atkAbiName === defAbiName) || (atkIsAura && !defIsAura)){
+      return { atk: getAbilityRate('atk', t, moveType), def: 4096 };
+    }
+    if(defIsAura){
+      return { atk: 4096, def: getAbilityRate('def', t, moveType) };
+    }
+    return { atk: getAbilityRate('atk', t, moveType), def: getAbilityRate('def', t, moveType) };
+  }
+
+  const aura = getAuraAbi(type);
   return {
-    atkAbi:  getAbilityRate('atk', type, moveType),
+    atkAbi:  aura.atk,
     atkItem: atkItem.type === type ? atkItem.val : 4096,
-    defAbi:  getAbilityRate('def', type, moveType),
+    defAbi:  aura.def,
     defItem: defItem.type === type ? defItem.val : 4096,
   };
 }
@@ -1756,7 +1831,8 @@ function acSearch(side, q){
   if(!hits.length){ drop.classList.remove('show'); return; }
   const html = hits.map((n,i)=>
     `<div class="ac-item" data-name="${n}" data-idx="${i}"
-      onmousedown="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}')">
+      onmousedown="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}'')"
+      ontouchstart="event.preventDefault();acSelect('${side}','${n.replace(/'/g,"\\'")}')">
       ${n}</div>`
   ).join('');
   showDrop(drop, document.getElementById(side+'-poke-inp'), html);
@@ -1827,34 +1903,14 @@ function wazaSearch(q){
   if(!q){ drop.classList.remove('show'); return; }
   const hits = searchWaza(q);
   if(!hits.length){ drop.classList.remove('show'); return; }
-
-  // ===== デバッグパネル（原因調査用・後で削除） =====
-  const dbg = document.getElementById('dbg-panel') || (() => {
-    const d = document.createElement('div');
-    d.id = 'dbg-panel';
-    d.style = 'position:fixed;top:0;left:0;right:0;background:rgba(0,0,0,0.85);color:#0f0;font-size:11px;padding:6px;z-index:99999;word-break:break-all;';
-    document.body.appendChild(d);
-    return d;
-  })();
-  const w0 = hits[0];
-  dbg.innerHTML = `
-    WD定義: ${typeof WD !== 'undefined' ? '✅' : '❌'}<br>
-    技数: ${typeof WD !== 'undefined' ? WD.length : '-'}<br>
-    先頭ヒット: ${w0.n}<br>
-    aフィールド: ${JSON.stringify(w0.a)}<br>
-    badges生成: ${(w0.a && w0.a.length) ? w0.a.join(',') : 'なし'}
-    <button onclick="document.getElementById('dbg-panel').remove()" style="margin-left:8px;color:red;">✕</button>
-  `;
-  // ===== デバッグパネルここまで =====
-
   const html = hits.map((w,i)=>{
     // 属性バッジ（waza.jsにa:["切","拳"]等があれば表示）
     const badges = (w.a && w.a.length)
       ? w.a.map(a=>`<span style="font-size:9px;color:var(--green);border:1px solid var(--green);border-radius:3px;padding:0 3px;line-height:1.6;">${a}</span>`).join('')
       : '';
     return `<div class="ac-item" data-power="${w.p}" data-cat="${w.c||''}" data-name="${w.n.replace(/"/g,'&quot;')}" data-idx="${i}"
-      style="display:flex;gap:6px;align-items:center;justify-content:space-between;"
-      onmousedown="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')">
+      onmousedown="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')" 
+      ontouchstart="event.preventDefault();wazaSelect('${w.n.replace(/'/g,"\\'")}',${w.p},'${w.c||''}')">
       <span style="flex:1;">${w.n}</span>
       <span style="display:flex;gap:3px;">${badges}</span>
       <span style="color:var(--yellow);font-size:11px;min-width:24px;text-align:right;">${w.p ?? '可変'}</span>
@@ -2299,9 +2355,23 @@ const TYPE_CHART = {
 /** 技タイプ × ポケモンのt1/t2 からタイプ相性倍率を計算 */
 function calcTypeEff(moveType, defFd){
   if(!moveType || !defFd) return 1.0;
+
+  // きもったま・しんがん: 攻撃側ONのとき、かくとう・ノーマル技のゴースト無効を等倍に変換
+  const atkAbilityName = document.getElementById('atk-ability-sel')?.value || '';
+  const atkAbilityOn   = document.getElementById('atk-ability-on')?.checked || false;
+  const isKimottama = atkAbilityOn && (atkAbilityName === 'きもったま' || atkAbilityName === 'しんがん');
+
   const row = TYPE_CHART[moveType] || {};
-  const r1 = row[defFd.t1] !== undefined ? row[defFd.t1] : 1.0;
-  const r2 = defFd.t2 ? (row[defFd.t2] !== undefined ? row[defFd.t2] : 1.0) : 1.0;
+  function getRate(defType){
+    const v = row[defType] !== undefined ? row[defType] : 1.0;
+    // きもったま・しんがん: かくとう・ノーマル技のゴースト無効（0）→等倍（1）
+    if(isKimottama && v === 0 && (moveType === 'ノーマル' || moveType === 'かくとう')){
+      return 1.0;
+    }
+    return v;
+  }
+  const r1 = getRate(defFd.t1);
+  const r2 = defFd.t2 ? getRate(defFd.t2) : 1.0;
   return r1 * r2;
 }
 
@@ -2310,8 +2380,10 @@ function calcTypeEff(moveType, defFd){
 // ============================================================
 function setStab(v){
   stabVal=v;
-  ['stab-none','stab-normal','stab-tera'].forEach(id=>{
-    document.getElementById(id).classList.toggle('active',{'stab-none':1.0,'stab-normal':1.5,'stab-tera':2.0}[id]===v);
+  // ×2.25ボタンを含めてactive切替
+  ['stab-none','stab-normal','stab-tera','stab-tera2'].forEach(id=>{
+    const el = document.getElementById(id);
+    if(el) el.classList.toggle('active',{'stab-none':1.0,'stab-normal':1.5,'stab-tera':2.0,'stab-tera2':2.25}[id]===v);
   });
   calcDmg();
 }
@@ -2361,14 +2433,14 @@ function autoTypeCalc(){
   // へんげんじざい特性はすべての技でタイプ一致（×1.5）、特性ONのときのみ
   const atkAbilityName = document.getElementById('atk-ability-sel')?.value || '';
   const atkAbilityOn   = document.getElementById('atk-ability-on')?.checked || false;
-  const isHengen = atkAbilityOn && atkAbilityName === 'へんげんじざい';
+  const isHengen = atkAbilityOn && (atkAbilityName === 'へんげんじざい' || atkAbilityName === 'リベロ'); // リベロも同仕様
   if(isHengen){
-    if(stabVal !== 2.0) setStab(1.5); // テラス状態は維持
+    if(stabVal !== 2.0 && stabVal !== 2.25) setStab(1.5); // テラス状態を維持
   } else if(atkPoke){
     const atkFd = getFormData(atkPoke, atkFormKey);
     if(atkFd){
       const hasStab = atkFd.t1 === moveType || (atkFd.t2 && atkFd.t2 === moveType);
-      if(stabVal !== 2.0){
+      if(stabVal !== 2.0 && stabVal !== 2.25){
         setStab(hasStab ? 1.5 : 1.0);
       }
     }
@@ -2640,7 +2712,8 @@ function calcDmg(){
 
   // 威力補正（フィールド補正を含む）
   const fieldRate = getFieldRate(moveType);
-  const powerRateFinal=Math.round(Math.round(Math.round(powerRate.atkAbi*powerRate.atkItem/4096)*charge/4096)*fieldRate/4096);
+  // powerRate.defAbi はオーラ系特性（防御側）の威力補正を含む
+  const powerRateFinal=Math.round(Math.round(Math.round(Math.round(powerRate.atkAbi*powerRate.defAbi/4096)*powerRate.atkItem/4096)*charge/4096)*fieldRate/4096);
   const powerFinal=fiveRound(effectivePower*powerRateFinal/4096);
 
   // 攻撃補正
@@ -2667,6 +2740,8 @@ function calcDmg(){
 
   // hitNo: 何発目か（1始まり）、1発目のみマルチスケイル等を適用
   function applyRates(dmg, hitNo=1){
+    // タイプ相性が無効（×0）のときはダメージ0
+    if(typeEff === 0) return 0;
     const dr = hitNo <= 1 ? damageRateFinal1 : damageRateFinalN;
     let d=fiveRound(dmg*stabVal);
     d=Math.floor(d*typeEff);
@@ -2903,6 +2978,9 @@ function updateSummary(){
 // 結果クリア
 // ============================================================
 function clearResult(){
+  // サマリー（○○A→○○B 技名）もリセット
+  const resSummary = document.getElementById('res-summary');
+  if(resSummary) resSummary.innerHTML = '';
   document.getElementById('res-dmg').textContent='—'; document.getElementById('res-dmg').style.color='var(--atk)';
   document.getElementById('res-pct').textContent='—'; document.getElementById('res-pct').style.color='var(--text)';
   document.getElementById('res-ko').textContent='—';  document.getElementById('res-ko').style.color='var(--text2)';
@@ -3075,6 +3153,12 @@ function swapSides(){
   renderFormChips('atk', atkPoke);
   renderFormChips('def', defPoke);
 
+  // 入れ替え前の特性（選択値・ON/OFF）を退避
+  const atkAbilityBefore   = document.getElementById('atk-ability-sel')?.value || '';
+  const atkAbilityOnBefore = document.getElementById('atk-ability-on')?.checked || false;
+  const defAbilityBefore   = document.getElementById('def-ability-sel')?.value || '';
+  const defAbilityOnBefore = document.getElementById('def-ability-on')?.checked || false;
+
   // 特性セレクトのoptionを先に再描画
   updateAbilitySelect('atk', newAtkFd);
   updateAbilitySelect('def', newDefFd);
@@ -3091,6 +3175,18 @@ function swapSides(){
   } else {
     resetSide('def', newDefFd);
   }
+
+  // 特性（選択値・ON/OFF）を入れ替えてセット
+  const atkAbSel = document.getElementById('atk-ability-sel');
+  const atkAbOn  = document.getElementById('atk-ability-on');
+  const defAbSel = document.getElementById('def-ability-sel');
+  const defAbOn  = document.getElementById('def-ability-on');
+  if(atkAbSel && [...atkAbSel.options].some(o => o.value === defAbilityBefore)) atkAbSel.value = defAbilityBefore;
+  if(atkAbOn) atkAbOn.checked = defAbilityOnBefore;
+  if(defAbSel && [...defAbSel.options].some(o => o.value === atkAbilityBefore)) defAbSel.value = atkAbilityBefore;
+  if(defAbOn) defAbOn.checked = atkAbilityOnBefore;
+  updateAbilityDesc('atk');
+  updateAbilityDesc('def');
 
   // 実数値を再計算
   if(atkPoke && newAtkFd){
